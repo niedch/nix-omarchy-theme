@@ -83,7 +83,7 @@
               mkdir -p "$THEMES_DIR"
 
               ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: theme: ''
-                ln -sfn ${builtins.fetchGit { url = theme.url; ref = theme.ref; }} "$THEMES_DIR/${name}"
+                ln -sfn ${pkgs.fetchgit { url = theme.url; rev = "refs/heads/${theme.ref}"; hash = "sha256-AfwCqhF7WMtavS+Z1YTO1YU3XsfGiwDyGhjhzYyvsfY="; }} "$THEMES_DIR/${name}"
               '') cfg.themes)}
 
               if [ -d "$THEMES_DIR/${cfg.defaultTheme}" ]; then
