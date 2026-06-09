@@ -61,11 +61,13 @@
 
           buildTheme = name: theme:
             let
-              themeSrc = builtins.fetchGit {
+              themeSrc = pkgs.fetchgit {
                 url = theme.url;
-                ref = theme.ref;
+                rev = theme.ref;
+                hash = theme.hash;
               };
-              colorsFile = "${themeSrc}/colors.toml";
+              themeRoot = "${themeSrc}/${theme.subpath}";
+              colorsFile = "${themeRoot}/colors.toml";
               hasColors = builtins.pathExists colorsFile;
               colors = if hasColors then builtins.fromTOML (builtins.readFile colorsFile) else { };
               rendered = if hasColors then
@@ -78,8 +80,8 @@
             pkgs.runCommandLocal "omarchy-theme-${name}" { } ''
               mkdir -p "$out"
 
-              # Copy all original theme source files
-              cp -r ${themeSrc}/* "$out/"
+              # Copy all original theme source files from subpath
+              cp -r ${themeRoot}/* "$out/"
 
               # Remove .git metadata
               rm -rf "$out/.git" 2>/dev/null || true
@@ -122,6 +124,15 @@
                     type = lib.types.str;
                     default = "main";
                     description = "Branch, tag, or commit SHA";
+                  };
+                  hash = lib.mkOption {
+                    type = lib.types.str;
+                    description = "SRI hash of the fetched source (e.g. sha256-...)";
+                  };
+                  subpath = lib.mkOption {
+                    type = lib.types.str;
+                    default = ".";
+                    description = "Subdirectory within the repo containing the theme";
                   };
                 };
               });
