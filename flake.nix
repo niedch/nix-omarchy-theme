@@ -211,9 +211,9 @@
               }
             ) cfg.symlinks;
 
-            home.packages = [
-              pkgs.libnotify
-              (pkgs.writeShellScriptBin "theme-switcher" ''
+            home.packages = with pkgs; [
+              libnotify
+              (writeShellScriptBin "theme-switcher" ''
                 set -euo pipefail
 
                 THEMES_DIR="${themesDir}"
@@ -221,10 +221,88 @@
 
                 THEME=$(ls -1 "$THEMES_DIR" | grep -v '^current$' | sort | ${cfg.selectorCommand} 2>/dev/null || echo "")
 
-                if [ -n "$THEME" ] && [ -d "$THEMES_DIR/$THEME" ]; then
-                  ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
-                  notify-send "Theme Switched" "$THEME" -i preferences-desktop-theme
-                  hyprctl reload 2>/dev/null || true
+                if [ -z "$THEME" ] || [ ! -d "$THEMES_DIR/$THEME" ]; then
+                  exit 0
+                fi
+
+                # Atomic symlink swap
+                ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
+
+                # --- Reload Cascade ---
+
+                # 1. Hyprland
+                hyprctl reload 2>/dev/null || true
+
+                # 2. Waybar (restart via systemd or fallback to pkill + relaunch)
+                if systemctl --user --quiet is-active waybar 2>/dev/null; then
+                  systemctl --user restart waybar 2>/dev/null || true
+                else
+                  pgrep -x waybar 2>/dev/null && pkill -9 -x waybar 2>/dev/null || true
+                  setsid waybar &>/dev/null &
+                fi
+
+                # 3. Ghostty (SIGUSR2 reloads color config)
+                killall -SIGUSR2 ghostty 2>/dev/null || true
+
+                # 4. Mako (reload config)
+                makoctl reload 2>/dev/null || true
+
+                # 5. Walker / Elephant (systemd restart)
+                systemctl --user restart elephant.service walker.service 2>/dev/null || true
+
+                # 6. btop (SIGUSR2 reloads theme)
+                pkill -SIGUSR2 btop 2>/dev/null || true
+
+                # 7. opencode (SIGUSR2 reloads config)
+                killall -SIGUSR2 opencode 2>/dev/null || true
+
+                # 8. GTK/GNOME settings
+                ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
+                gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
+                gsettings set org.gnome.desktop.interface gtk-theme "Adwaita-dark" 2>/dev/null || true
+                case "$THEME" in
+                  *light*|*latte*)
+                    gsettings set org.gnome.desktop.interface color-scheme "prefer-light" 2>/dev/null || true
+                    ;;
+                  *)
+                    gsettings set org.gnome.desktop.interface color-scheme "prefer-dark" 2>/dev/null || true
+                    ;;
+                esac
+
+                # 9. User hooks
+                HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
+                if [ -d "$HOOK_DIR" ]; then
+                  for hook in "$HOOK_DIR"/*; do
+                    [ -x "$hook" ] && "$hook" "$THEME"
+                  done
+                fi
+                if [ -x "$HOME/.config/theme-switcher/hooks/theme-set" ]; then
+                  "$HOME/.config/theme-switcher/hooks/theme-set" "$THEME"
+                fi
+
+                # 10. Notification
+                notify-send "Theme Switched" "$THEME" -i preferences-desktop-theme
+              '')
+
+              (writeShellScriptBin "theme-wallpaper" ''
+                set -euo pipefail
+
+                CURRENT="${currentLink}"
+
+                # Find a random background from the current theme
+                BG_DIR="$CURRENT/backgrounds"
+                if [ -d "$BG_DIR" ]; then
+                  BG=$(find "$BG_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" -o -iname "*.bmp" \) 2>/dev/null | shuf -n 1)
+                fi
+
+                if [ -n "${BG:-}" ] && [ -f "$BG" ]; then
+                  pkill -x swaybg 2>/dev/null || true
+                  setsid swaybg -i "$BG" -m fill &>/dev/null &
+                  notify-send "Wallpaper Changed" "$(basename "$BG")" -i image-x-generic
+                else
+                  # Fallback: solid black
+                  pkill -x swaybg 2>/dev/null || true
+                  setsid swaybg -c "#000000" &>/dev/null &
                 fi
               '')
             ];
