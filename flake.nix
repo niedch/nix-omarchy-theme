@@ -76,6 +76,22 @@
               renderedFiles = lib.mapAttrs' (n: content:
                 lib.nameValuePair n (pkgs.writeText "omarchy-${name}-${n}" content)
               ) rendered;
+
+              gtkThemeFile = "${themeRoot}/gtk.theme";
+              hasGtkTheme = builtins.pathExists gtkThemeFile;
+              isLight = builtins.pathExists "${themeRoot}/light.mode";
+              gtkThemeName = if hasGtkTheme then lib.strings.removeSuffix "\n" (builtins.readFile gtkThemeFile)
+                             else if isLight then "Adwaita"
+                             else "Adwaita-dark";
+              colorScheme = if isLight then "prefer-light" else "prefer-dark";
+              settingsIni = pkgs.writeText "settings-${name}.ini" ''
+                [Settings]
+                gtk-theme-name=${gtkThemeName}
+                gtk-cursor-theme-name=${cfg.gtk.cursorTheme.name}
+                gtk-cursor-theme-size=${toString cfg.gtk.cursorTheme.size}
+                gtk-application-prefer-dark-theme=${if isLight then "0" else "1"}
+                color-scheme=${colorScheme}
+              '';
             in
             pkgs.runCommandLocal "omarchy-theme-${name}" { } ''
               mkdir -p "$out"
@@ -92,6 +108,11 @@
                   cp "${filePath}" "$out/${lib.escapeShellArg n}"
                 fi
               '') renderedFiles)}
+
+              # Generate settings.ini if the theme doesn't ship its own
+              if [ ! -f "$out/settings.ini" ]; then
+                cp "${settingsIni}" "$out/settings.ini"
+              fi
             '';
         in
         {
@@ -184,6 +205,32 @@
                 Keys are XDG config directory names, values specify theme repo source subpaths.
               '';
             };
+
+            gtk = lib.mkOption {
+              type = lib.types.submodule {
+                options = {
+                  cursorTheme = {
+                    name = lib.mkOption {
+                      type = lib.types.str;
+                      default = "Adwaita";
+                      description = "Cursor theme name";
+                    };
+                    size = lib.mkOption {
+                      type = lib.types.int;
+                      default = 24;
+                      description = "Cursor size";
+                    };
+                    package = lib.mkOption {
+                      type = lib.types.nullOr lib.types.package;
+                      default = null;
+                      description = "Cursor theme package to install";
+                    };
+                  };
+                };
+              };
+              default = { };
+              description = "GTK configuration";
+            };
           };
 
           config = lib.mkIf cfg.enable {
@@ -200,7 +247,32 @@
 
               if [ -d "$THEMES_DIR/${cfg.defaultTheme}" ]; then
                 ln -sfn "$THEMES_DIR/${cfg.defaultTheme}" "$THEMES_DIR/current"
+
+                GTK_THEME_FILE="$THEMES_DIR/current/gtk.theme"
+                if [ -f "$GTK_THEME_FILE" ]; then
+                  GTK_THEME=$(cat "$GTK_THEME_FILE")
+                elif [ -f "$THEMES_DIR/current/light.mode" ]; then
+                  GTK_THEME="Adwaita"
+                else
+                  GTK_THEME="Adwaita-dark"
+                fi
+                ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/gtk-theme "'$GTK_THEME'"
+                if [ -f "$THEMES_DIR/current/light.mode" ]; then
+                  ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
+                else
+                  ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
+                fi
+                ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cfg.gtk.cursorTheme.name}'"
+                ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-size ${toString cfg.gtk.cursorTheme.size}
               fi
+
+              # Point GTK config files at current theme via runtime symlinks
+              for dir in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
+                mkdir -p "$dir"
+                rm -f "$dir/settings.ini" "$dir/gtk.css" 2>/dev/null || true
+                ln -sfn "$THEMES_DIR/current/settings.ini" "$dir/settings.ini" 2>/dev/null || true
+                ln -sfn "$THEMES_DIR/current/gtk.css" "$dir/gtk.css" 2>/dev/null || true
+              done
             '';
 
             xdg.configFile = lib.mapAttrs' (target: symlink:
@@ -258,16 +330,31 @@
 
                 # 8. GTK/GNOME settings
                 ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
-                gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
-                gsettings set org.gnome.desktop.interface gtk-theme "Adwaita-dark" 2>/dev/null || true
-                case "$THEME" in
-                  *light*|*latte*)
-                    gsettings set org.gnome.desktop.interface color-scheme "prefer-light" 2>/dev/null || true
-                    ;;
-                  *)
-                    gsettings set org.gnome.desktop.interface color-scheme "prefer-dark" 2>/dev/null || true
-                    ;;
-                esac
+                ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'$ICON_THEME'"
+                GTK_THEME_FILE="$CURRENT/gtk.theme"
+                if [ -f "$GTK_THEME_FILE" ]; then
+                  GTK_THEME=$(cat "$GTK_THEME_FILE")
+                elif [ -f "$CURRENT/light.mode" ]; then
+                  GTK_THEME="Adwaita"
+                else
+                  GTK_THEME="Adwaita-dark"
+                fi
+                ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/gtk-theme "'$GTK_THEME'"
+                if [ -f "$CURRENT/light.mode" ]; then
+                  ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
+                else
+                  ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
+                fi
+                ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cfg.gtk.cursorTheme.name}'"
+                ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-size ${toString cfg.gtk.cursorTheme.size}
+
+                # Copy GTK settings.ini and gtk.css for runtime use
+                for dir in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
+                  mkdir -p "$dir"
+                  rm -f "$dir/settings.ini" "$dir/gtk.css" 2>/dev/null || true
+                  ln -sfn "$CURRENT/settings.ini" "$dir/settings.ini" 2>/dev/null || true
+                  ln -sfn "$CURRENT/gtk.css" "$dir/gtk.css" 2>/dev/null || true
+                done
 
                 # 9. User hooks
                 HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
@@ -283,29 +370,9 @@
                 # 10. Notification
                 notify-send "Theme Switched" "$THEME" -i preferences-desktop-theme
               '')
-
-              (writeShellScriptBin "theme-wallpaper" ''
-                set -euo pipefail
-
-                CURRENT="${currentLink}"
-
-                # Find a random background from the current theme
-                BG_DIR="$CURRENT/backgrounds"
-                if [ -d "$BG_DIR" ]; then
-                  BG=$(find "$BG_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" -o -iname "*.bmp" \) 2>/dev/null | shuf -n 1)
-                fi
-
-                if [ -n "${BG:-}" ] && [ -f "$BG" ]; then
-                  pkill -x swaybg 2>/dev/null || true
-                  setsid swaybg -i "$BG" -m fill &>/dev/null &
-                  notify-send "Wallpaper Changed" "$(basename "$BG")" -i image-x-generic
-                else
-                  # Fallback: solid black
-                  pkill -x swaybg 2>/dev/null || true
-                  setsid swaybg -c "#000000" &>/dev/null &
                 fi
               '')
-            ];
+            ] ++ lib.optional (cfg.gtk.cursorTheme.package != null) cfg.gtk.cursorTheme.package;
 
             programs.zsh.initExtra = lib.mkIf config.programs.zsh.enable ''
               alias ts="theme-switcher"

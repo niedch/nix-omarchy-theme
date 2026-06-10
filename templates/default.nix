@@ -16,4 +16,5 @@
   "swayosd.css" = builtins.readFile ./swayosd.css;
   "walker.css" = builtins.readFile ./walker.css;
   "waybar.css" = builtins.readFile ./waybar.css;
+  "gtk.css" = builtins.readFile ./gtk.css;
 }
