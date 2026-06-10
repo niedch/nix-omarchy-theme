@@ -305,16 +305,16 @@
                 # 1. Hyprland
                 hyprctl reload 2>/dev/null || true
 
-                # 2. Waybar (restart via systemd or fallback to pkill + relaunch)
+                # 2. Waybar (kill existing instances, then restart via systemd or relaunch)
+                pkill waybar 2>/dev/null || true
                 if systemctl --user --quiet is-active waybar 2>/dev/null; then
                   systemctl --user restart waybar 2>/dev/null || true
                 else
-                  pgrep -x waybar 2>/dev/null && pkill -9 -x waybar 2>/dev/null || true
                   setsid waybar &>/dev/null &
                 fi
 
                 # 3. Ghostty (SIGUSR2 reloads color config)
-                killall -SIGUSR2 ghostty 2>/dev/null || true
+                pkill -USR2 ghostty 2>/dev/null || true
 
                 # 4. Mako (reload config)
                 makoctl reload 2>/dev/null || true
@@ -326,7 +326,7 @@
                 pkill -SIGUSR2 btop 2>/dev/null || true
 
                 # 7. opencode (SIGUSR2 reloads config)
-                killall -SIGUSR2 opencode 2>/dev/null || true
+                pkill -USR2 opencode 2>/dev/null || true
 
                 # 8. GTK/GNOME settings
                 ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
@@ -369,8 +369,6 @@
 
                 # 10. Notification
                 notify-send "Theme Switched" "$THEME" -i preferences-desktop-theme
-              '')
-                fi
               '')
             ] ++ lib.optional (cfg.gtk.cursorTheme.package != null) cfg.gtk.cursorTheme.package;
 
