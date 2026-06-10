@@ -248,6 +248,12 @@
               if [ -d "$THEMES_DIR/${cfg.defaultTheme}" ]; then
                 ln -sfn "$THEMES_DIR/${cfg.defaultTheme}" "$THEMES_DIR/current"
 
+                # Set up initial current-background symlink
+                FIRST_BG=$(ls -1 "$THEMES_DIR/current/backgrounds/" 2>/dev/null | head -1 || echo "")
+                if [ -n "$FIRST_BG" ]; then
+                  ln -sfn "$THEMES_DIR/current/backgrounds/$FIRST_BG" "$THEMES_DIR/current-background"
+                fi
+
                 GTK_THEME_FILE="$THEMES_DIR/current/gtk.theme"
                 if [ -f "$GTK_THEME_FILE" ]; then
                   GTK_THEME=$(cat "$GTK_THEME_FILE")
@@ -299,6 +305,21 @@
 
                 # Atomic symlink swap
                 ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
+
+                # Update current-background symlink
+                CURRENT_BG="${themesDir}/current-background"
+                FIRST_BG=$(ls -1 "$CURRENT/backgrounds/" 2>/dev/null | head -1 || echo "")
+                if [ -n "$FIRST_BG" ]; then
+                  PREV_BG=$(readlink "$CURRENT_BG" 2>/dev/null || echo "")
+                  PREV_BG_NAME=$(basename "$PREV_BG" 2>/dev/null || echo "")
+                  if [ -n "$PREV_BG_NAME" ] && [ -f "$CURRENT/backgrounds/$PREV_BG_NAME" ]; then
+                    ln -sfn "$CURRENT/backgrounds/$PREV_BG_NAME" "$CURRENT_BG"
+                  else
+                    ln -sfn "$CURRENT/backgrounds/$FIRST_BG" "$CURRENT_BG"
+                  fi
+                  pkill swaybg 2>/dev/null || true
+                  setsid swaybg -i "$CURRENT_BG" -m fill &>/dev/null &
+                fi
 
                 # --- Reload Cascade ---
 
@@ -369,6 +390,32 @@
 
                 # 10. Notification
                 notify-send "Theme Switched" "$THEME" -i preferences-desktop-theme
+              '')
+              (writeShellScriptBin "theme-wallpaper" ''
+                set -euo pipefail
+
+                THEMES_DIR="${themesDir}"
+                CURRENT="${currentLink}"
+                CURRENT_BG="${themesDir}/current-background"
+
+                BG_DIR="$CURRENT/backgrounds"
+                if [ ! -d "$BG_DIR" ]; then
+                  notify-send "No Backgrounds" "Current theme has no backgrounds directory"
+                  exit 0
+                fi
+
+                BG=$(ls -1 "$BG_DIR" | sort | ${cfg.selectorCommand} 2>/dev/null || echo "")
+
+                if [ -z "$BG" ]; then
+                  exit 0
+                fi
+
+                ln -sfn "$BG_DIR/$BG" "$CURRENT_BG"
+
+                pkill swaybg 2>/dev/null || true
+                setsid swaybg -i "$CURRENT_BG" -m fill &>/dev/null &
+
+                notify-send "Background Changed" "$BG"
               '')
             ] ++ lib.optional (cfg.gtk.cursorTheme.package != null) cfg.gtk.cursorTheme.package;
 
