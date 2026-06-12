@@ -32,7 +32,7 @@ in {
             DEFAULT_BG=""
           fi
         fi
-        FIRST_BG="${DEFAULT_BG:-$(ls -1 "$THEMES_DIR/current/backgrounds/" 2>/dev/null | head -1 || echo "")}"
+        FIRST_BG="''${DEFAULT_BG:-$(ls -1 "$THEMES_DIR/current/backgrounds/" 2>/dev/null | head -1 || echo "")}"
         if [ -n "$FIRST_BG" ]; then
           ln -sfn "$THEMES_DIR/current/backgrounds/$FIRST_BG" "$THEMES_DIR/current-background"
         fi
@@ -110,7 +110,7 @@ in {
             DEFAULT_BG=""
           fi
         fi
-        FIRST_BG="${DEFAULT_BG:-$(ls -1 "$CURRENT/backgrounds/" 2>/dev/null | head -1 || echo "")}"
+        FIRST_BG="''${DEFAULT_BG:-$(ls -1 "$CURRENT/backgrounds/" 2>/dev/null | head -1 || echo "")}"
         if [ -n "$FIRST_BG" ]; then
           PREV_BG=$(readlink "$CURRENT_BG" 2>/dev/null || echo "")
           PREV_BG_NAME=$(basename "$PREV_BG" 2>/dev/null || echo "")
