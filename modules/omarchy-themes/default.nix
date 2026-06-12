@@ -58,7 +58,7 @@ in {
         fi
         mkdir -p "$HOME/.config/environment.d"
         echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
-        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME
+        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME || true
 
         for dir in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
           mkdir -p "$dir"
