@@ -47,14 +47,26 @@ in {
           ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cfg.gtk.cursorTheme.name}'"
           ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-size ${toString cfg.gtk.cursorTheme.size}
         fi
-      fi
 
-      for dir in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
-        mkdir -p "$dir"
-        rm -f "$dir/settings.ini" "$dir/gtk.css" 2>/dev/null || true
-        ln -sfn "$THEMES_DIR/current/settings.ini" "$dir/settings.ini" 2>/dev/null || true
-        ln -sfn "$THEMES_DIR/current/gtk.css" "$dir/gtk.css" 2>/dev/null || true
-      done
+        if [ -f "$THEMES_DIR/current/light.mode" ]; then
+          GTK_THEME_EXPORT="$GTK_THEME"
+        else
+          case "$GTK_THEME" in
+            *-dark) GTK_THEME_EXPORT="$GTK_THEME" ;;
+            *)      GTK_THEME_EXPORT="$GTK_THEME:dark" ;;
+          esac
+        fi
+        mkdir -p "$HOME/.config/environment.d"
+        echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
+        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME
+
+        for dir in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
+          mkdir -p "$dir"
+          rm -f "$dir/settings.ini" "$dir/gtk.css" 2>/dev/null || true
+          ln -sfn "$THEMES_DIR/current/settings.ini" "$dir/settings.ini" 2>/dev/null || true
+          ln -sfn "$THEMES_DIR/current/gtk.css" "$dir/gtk.css" 2>/dev/null || true
+        done
+      fi
     '';
 
     xdg.configFile = lib.mapAttrs' (target: symlink:
@@ -132,6 +144,18 @@ in {
         fi
         ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cfg.gtk.cursorTheme.name}'"
         ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-size ${toString cfg.gtk.cursorTheme.size}
+
+        if [ -f "$CURRENT/light.mode" ]; then
+          GTK_THEME_EXPORT="$GTK_THEME"
+        else
+          case "$GTK_THEME" in
+            *-dark) GTK_THEME_EXPORT="$GTK_THEME" ;;
+            *)      GTK_THEME_EXPORT="$GTK_THEME:dark" ;;
+          esac
+        fi
+        mkdir -p "$HOME/.config/environment.d"
+        echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
+        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME
 
         for dir in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
           mkdir -p "$dir"
