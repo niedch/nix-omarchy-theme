@@ -26,7 +26,7 @@ in {
 
         FIRST_BG=$(ls -1 "$THEMES_DIR/current/backgrounds/" 2>/dev/null | head -1 || echo "")
         if [ -n "$FIRST_BG" ]; then
-          ln -sfn "$THEMES_DIR/current/backgrounds/$FIRST_BG" "$THEMES_DIR/current/current-background"
+          ln -sfn "$THEMES_DIR/current/backgrounds/$FIRST_BG" "$THEMES_DIR/current-background"
         fi
 
         GTK_THEME_FILE="$THEMES_DIR/current/gtk.theme"
@@ -85,7 +85,7 @@ in {
         THEMES_DIR="${themesDir}"
         CURRENT="${currentLink}"
 
-        THEME=$(ls -1 "$THEMES_DIR" | grep -v '^current$' | sort | ${cfg.selectorCommand} 2>/dev/null || echo "")
+        THEME=$(ls -1 "$THEMES_DIR" | grep -v -E '^(current|current-background)$' | sort | ${cfg.selectorCommand} 2>/dev/null || echo "")
 
         if [ -z "$THEME" ] || [ ! -d "$THEMES_DIR/$THEME" ]; then
           exit 0
@@ -93,7 +93,7 @@ in {
 
         ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
 
-        CURRENT_BG="${currentLink}/current-background"
+        CURRENT_BG="${themesDir}/current-background"
         FIRST_BG=$(ls -1 "$CURRENT/backgrounds/" 2>/dev/null | head -1 || echo "")
         if [ -n "$FIRST_BG" ]; then
           PREV_BG=$(readlink "$CURRENT_BG" 2>/dev/null || echo "")
@@ -181,7 +181,7 @@ in {
 
         THEMES_DIR="${themesDir}"
         CURRENT="${currentLink}"
-        CURRENT_BG="${currentLink}/current/current-background"
+        CURRENT_BG="${themesDir}/current-background"
 
         BG_DIR="$CURRENT/backgrounds"
         if [ ! -d "$BG_DIR" ]; then
