@@ -39,6 +39,11 @@
             default = ".";
             description = "Subdirectory within the repo containing the theme";
           };
+          defaultBackground = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Default background filename. null = use first file alphabetically.";
+          };
         };
       });
       default = { };

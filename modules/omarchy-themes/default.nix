@@ -24,7 +24,15 @@ in {
       if [ -d "$THEMES_DIR/${cfg.defaultTheme}" ]; then
         ln -sfn "$THEMES_DIR/${cfg.defaultTheme}" "$THEMES_DIR/current"
 
-        FIRST_BG=$(ls -1 "$THEMES_DIR/current/backgrounds/" 2>/dev/null | head -1 || echo "")
+        DEFAULT_BG=""
+        DEFAULT_BG_FILE="$THEMES_DIR/current/default-background"
+        if [ -f "$DEFAULT_BG_FILE" ]; then
+          DEFAULT_BG=$(cat "$DEFAULT_BG_FILE")
+          if [ ! -f "$THEMES_DIR/current/backgrounds/$DEFAULT_BG" ]; then
+            DEFAULT_BG=""
+          fi
+        fi
+        FIRST_BG="${DEFAULT_BG:-$(ls -1 "$THEMES_DIR/current/backgrounds/" 2>/dev/null | head -1 || echo "")}"
         if [ -n "$FIRST_BG" ]; then
           ln -sfn "$THEMES_DIR/current/backgrounds/$FIRST_BG" "$THEMES_DIR/current-background"
         fi
@@ -94,7 +102,15 @@ in {
         ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
 
         CURRENT_BG="${themesDir}/current-background"
-        FIRST_BG=$(ls -1 "$CURRENT/backgrounds/" 2>/dev/null | head -1 || echo "")
+        DEFAULT_BG=""
+        DEFAULT_BG_FILE="$CURRENT/default-background"
+        if [ -f "$DEFAULT_BG_FILE" ]; then
+          DEFAULT_BG=$(cat "$DEFAULT_BG_FILE")
+          if [ ! -f "$CURRENT/backgrounds/$DEFAULT_BG" ]; then
+            DEFAULT_BG=""
+          fi
+        fi
+        FIRST_BG="${DEFAULT_BG:-$(ls -1 "$CURRENT/backgrounds/" 2>/dev/null | head -1 || echo "")}"
         if [ -n "$FIRST_BG" ]; then
           PREV_BG=$(readlink "$CURRENT_BG" 2>/dev/null || echo "")
           PREV_BG_NAME=$(basename "$PREV_BG" 2>/dev/null || echo "")

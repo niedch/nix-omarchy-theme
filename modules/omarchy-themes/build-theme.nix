@@ -49,4 +49,8 @@ pkgs.runCommandLocal "omarchy-theme-${name}" { } ''
   if [ ! -f "$out/settings.ini" ]; then
     cp "${settingsIni}" "$out/settings.ini"
   fi
+
+  ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
+    echo "${theme.defaultBackground}" > "$out/default-background"
+  ''}
 ''
