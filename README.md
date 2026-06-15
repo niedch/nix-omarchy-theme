@@ -126,8 +126,10 @@ color15 = "#bac2de"
 Optional files in the theme repo:
 
 | File | Purpose |
-|---|---|
-| `light.mode` | Empty marker file — treat as light theme |
+|---|---|---|
+| `light.mode` | Empty marker file — treat as light theme; sets GTK theme to `Adwaita` + `prefer-light` |
+| `gtk.theme` | Override the GTK theme name (e.g. `"Tokyo-Night"`); takes highest priority over `light.mode` |
+| `icons.theme` | Icon theme name (e.g. `"Yaru-prussiangreen"`); feeds into GTK's `icon-theme` setting |
 | `backgrounds/` | Wallpaper images (any format) |
 | Any template name | Overrides the built-in template for that app (e.g. `waybar.css`, `hyprland.conf`) |
 
@@ -147,7 +149,7 @@ Available color keys: `background`, `foreground`, `cursor`, `accent`, `selection
 
 ### `theme-switcher` (alias `ts` with zsh)
 
-Lists all defined themes, applies the selected one: switches wallpaper, reloads Hyprland, restarts Waybar/Mako/Ghostty/Btop, and runs custom hooks.
+Lists all defined themes, applies the selected one: switches wallpaper, reloads Hyprland, restarts Waybar/Mako/Ghostty/Btop, updates GTK theme and icon theme via gsettings, and runs custom hooks.
 
 ### `theme-wallpaper`
 
