@@ -39,7 +39,6 @@ let
     gtk-cursor-theme-name=${cursorThemeName}
     gtk-cursor-theme-size=${toString cursorThemeSize}
     gtk-application-prefer-dark-theme=${if isLight then "0" else "1"}
-    color-scheme=${colorScheme}
   '';
 in
 pkgs.runCommandLocal "omarchy-theme-${name}" { } ''

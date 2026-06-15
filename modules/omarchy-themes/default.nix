@@ -70,10 +70,15 @@ in {
           esac
         fi
         mkdir -p "$HOME/.config/environment.d"
-        echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
+        cat > "$HOME/.config/environment.d/theme.conf" << EOF
+GTK_THEME=$GTK_THEME_EXPORT
+ADW_DISABLE_PORTAL=1
+EOF
         export GTK_THEME="$GTK_THEME_EXPORT"
-        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME || true
+        export ADW_DISABLE_PORTAL=1
+        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME ADW_DISABLE_PORTAL || true
         hyprctl setenv GTK_THEME "$GTK_THEME_EXPORT" 2>/dev/null || true
+        hyprctl setenv ADW_DISABLE_PORTAL 1 2>/dev/null || true
 
         mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
         rm -f "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/gtk.css" \
@@ -181,10 +186,15 @@ in {
           esac
         fi
         mkdir -p "$HOME/.config/environment.d"
-        echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
+        cat > "$HOME/.config/environment.d/theme.conf" << EOF
+GTK_THEME=$GTK_THEME_EXPORT
+ADW_DISABLE_PORTAL=1
+EOF
         export GTK_THEME="$GTK_THEME_EXPORT"
-        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME
+        export ADW_DISABLE_PORTAL=1
+        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME ADW_DISABLE_PORTAL
         hyprctl setenv GTK_THEME "$GTK_THEME_EXPORT" 2>/dev/null || true
+        hyprctl setenv ADW_DISABLE_PORTAL 1 2>/dev/null || true
 
         mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
         rm -f "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/gtk.css" \
