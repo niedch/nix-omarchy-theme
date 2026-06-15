@@ -37,6 +37,20 @@ in {
           ln -sfn "$THEMES_DIR/current/backgrounds/$FIRST_BG" "$THEMES_DIR/current-background"
         fi
 
+        CURRENT="$THEMES_DIR/current"
+        if [ -f "$CURRENT/gtk.theme" ]; then
+          GTK_THEME=$(cat "$CURRENT/gtk.theme")
+        elif [ -f "$CURRENT/light.mode" ]; then
+          GTK_THEME="Adwaita"
+        else
+          GTK_THEME="Adwaita-dark"
+        fi
+        gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
+        gsettings set org.gnome.desktop.interface color-scheme \
+          "$([ -f "$CURRENT/light.mode" ] && echo "prefer-light" || echo "prefer-dark")" 2>/dev/null || true
+        ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
+        gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
+
         :
       fi
     '';
