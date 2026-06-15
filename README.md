@@ -2,20 +2,18 @@
 
 Declarative multi-theme manager for NixOS + Hyprland, built as a Home Manager module.
 
-Define color themes from Git repositories, render 19 application templates, switch themes at runtime, and have your entire desktop follow — terminals, bars, editors, notifications, lockscreens, and more.
+Define color themes from Git repositories, render 17 application templates, switch themes at runtime, and have your entire desktop follow — terminals, bars, editors, notifications, lockscreens, and more.
 
 ## Features
 
 - **Multi-theme management** — define any number of themes from Git repos containing a `colors.toml`
-- **19 built-in app templates** — Alacritty, Btop, Chromium, Foot, Ghostty, GTK, Gum, Helix, Hyprland, Hyprlock, Hyprland preview picker, Keyboard RGB, Kitty, Mako, Obsidian, SwayOSD, Walker, Waybar, and a generic GTK CSS
+- **17 built-in app templates** — Alacritty, Btop, Chromium, Foot, Ghostty, Gum, Helix, Hyprland, Hyprlock, Hyprland preview picker, Keyboard RGB, Kitty, Mako, Obsidian, SwayOSD, Walker, Waybar
 - **Template placeholders** — `{{ key }}` (hex), `{{ key_strip }}` (hex without `#`), `{{ key_rgb }}` (dec commas)
 - **Per-app override** — theme repos can ship their own config files, which take precedence over built-in templates
 - **Runtime switching** — `theme-switcher` command to select and apply a theme interactively
 - **Wallpaper support** — themes can include a `backgrounds/` directory; `theme-wallpaper` lets you pick one
-- **GTK integration** — sets GTK theme, cursor theme, icon theme, and color scheme via dconf
 - **XDG symlinks** — symlink theme subdirectories (e.g. `hypr/`, `waybar/`) into `~/.config/`
 - **Custom hooks** — executable scripts in `~/.config/theme-switcher/hooks/` run on every theme switch
-- **Light/dark detection** — presence of a `light.mode` file in the theme repo switches to `Adwaita` + `prefer-light`
 
 ## Installation
 
@@ -65,12 +63,6 @@ Enable the module and define your themes:
       hypr = {};
       waybar = {};
       wallpapers = { source = "wallpapers"; };
-    };
-
-    gtk.cursorTheme = {
-      name = "Bibata-Modern-Classic";
-      size = 24;
-      package = pkgs.bibata-cursors;
     };
   };
 }
@@ -135,9 +127,7 @@ Optional files in the theme repo:
 
 | File | Purpose |
 |---|---|
-| `gtk.theme` | GTK theme name (overrides auto-detection) |
-| `light.mode` | Empty marker file — treat as light theme (`Adwaita` + `prefer-light`) |
-| `icons.theme` | Icon theme name |
+| `light.mode` | Empty marker file — treat as light theme |
 | `backgrounds/` | Wallpaper images (any format) |
 | Any template name | Overrides the built-in template for that app (e.g. `waybar.css`, `hyprland.conf`) |
 
@@ -157,7 +147,7 @@ Available color keys: `background`, `foreground`, `cursor`, `accent`, `selection
 
 ### `theme-switcher` (alias `ts` with zsh)
 
-Lists all defined themes, applies the selected one: switches wallpaper, reloads Hyprland, restarts Waybar/Mako/Ghostty/Btop, updates dconf GTK settings, and runs custom hooks.
+Lists all defined themes, applies the selected one: switches wallpaper, reloads Hyprland, restarts Waybar/Mako/Ghostty/Btop, and runs custom hooks.
 
 ### `theme-wallpaper`
 
@@ -179,7 +169,6 @@ Place executable scripts in:
 | `chromium.theme` | Chromium browser |
 | `foot.ini` | Foot terminal |
 | `ghostty.conf` | Ghostty terminal |
-| `gtk.css` | GTK3/4 CSS |
 | `gum.env.conf` | Charm Gum TUI |
 | `helix.toml` | Helix editor |
 | `hyprland.conf` | Hyprland border color |

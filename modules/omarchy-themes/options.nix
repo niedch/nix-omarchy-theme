@@ -94,43 +94,5 @@
         Keys are XDG config directory names, values specify theme repo source subpaths.
       '';
     };
-
-    gtk = lib.mkOption {
-      type = lib.types.submodule {
-        options = {
-          iconTheme = {
-            name = lib.mkOption {
-              type = lib.types.str;
-              default = "Adwaita";
-              description = "Icon theme name (can be overridden per-theme via icons.theme file)";
-            };
-            package = lib.mkOption {
-              type = lib.types.nullOr lib.types.package;
-              default = null;
-              description = "Icon theme package to install";
-            };
-          };
-          cursorTheme = {
-            name = lib.mkOption {
-              type = lib.types.str;
-              default = "Adwaita";
-              description = "Cursor theme name";
-            };
-            size = lib.mkOption {
-              type = lib.types.int;
-              default = 24;
-              description = "Cursor size";
-            };
-            package = lib.mkOption {
-              type = lib.types.nullOr lib.types.package;
-              default = null;
-              description = "Cursor theme package to install";
-            };
-          };
-        };
-      };
-      default = { };
-      description = "GTK configuration";
-    };
   };
 }

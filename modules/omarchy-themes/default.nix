@@ -15,7 +15,7 @@ in {
       mkdir -p "$THEMES_DIR"
 
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: theme: ''
-        theme_path="${buildTheme { inherit name theme; templates = cfg.templates; cursorThemeName = cfg.gtk.cursorTheme.name; cursorThemeSize = cfg.gtk.cursorTheme.size; iconThemeName = cfg.gtk.iconTheme.name; }}"
+        theme_path="${buildTheme { inherit name theme; templates = cfg.templates; }}"
         if [ ! "$(readlink -f "$THEMES_DIR/${name}" 2>/dev/null)" = "$theme_path" ]; then
           ln -sfn "$theme_path" "$THEMES_DIR/${name}"
         fi
@@ -37,56 +37,7 @@ in {
           ln -sfn "$THEMES_DIR/current/backgrounds/$FIRST_BG" "$THEMES_DIR/current-background"
         fi
 
-        GTK_THEME_FILE="$THEMES_DIR/current/gtk.theme"
-        if [ -f "$GTK_THEME_FILE" ]; then
-          GTK_THEME=$(cat "$GTK_THEME_FILE")
-        elif [ -f "$THEMES_DIR/current/light.mode" ]; then
-          GTK_THEME="Adwaita"
-        else
-          GTK_THEME="Adwaita-dark"
-        fi
-        if [ -n "''${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
-          ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/gtk-theme "'$GTK_THEME'"
-          if [ -f "$THEMES_DIR/current/light.mode" ]; then
-            ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
-          else
-            ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
-          fi
-          ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cfg.gtk.cursorTheme.name}'"
-          ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-size ${toString cfg.gtk.cursorTheme.size}
-          ICON_THEME=$(cat "$THEMES_DIR/current/icons.theme" 2>/dev/null || echo "${cfg.gtk.iconTheme.name}")
-          if [ "$ICON_THEME" != "${cfg.gtk.iconTheme.name}" ] && ! [ -e "/run/current-system/sw/share/icons/$ICON_THEME" ] && ! [ -e "$HOME/.local/share/icons/$ICON_THEME" ] && ! [ -e "$HOME/.icons/$ICON_THEME" ]; then
-            ICON_THEME="${cfg.gtk.iconTheme.name}"
-          fi
-          ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'$ICON_THEME'"
-        fi
-
-        if [ -f "$THEMES_DIR/current/light.mode" ]; then
-          GTK_THEME_EXPORT="$GTK_THEME"
-        else
-          case "$GTK_THEME" in
-            *-dark) GTK_THEME_EXPORT="$GTK_THEME" ;;
-            *)      GTK_THEME_EXPORT="$GTK_THEME:dark" ;;
-          esac
-        fi
-        mkdir -p "$HOME/.config/environment.d"
-        cat > "$HOME/.config/environment.d/theme.conf" << EOF
-GTK_THEME=$GTK_THEME_EXPORT
-ADW_DISABLE_PORTAL=1
-EOF
-        export GTK_THEME="$GTK_THEME_EXPORT"
-        export ADW_DISABLE_PORTAL=1
-        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME ADW_DISABLE_PORTAL || true
-        hyprctl setenv GTK_THEME "$GTK_THEME_EXPORT" 2>/dev/null || true
-        hyprctl setenv ADW_DISABLE_PORTAL 1 2>/dev/null || true
-
-        mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
-        rm -f "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/gtk.css" \
-              "$HOME/.config/gtk-4.0/settings.ini" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
-        ln -sfn "$THEMES_DIR/current/settings-gtk3.ini" "$HOME/.config/gtk-3.0/settings.ini" 2>/dev/null || true
-        ln -sfn "$THEMES_DIR/current/settings-gtk4.ini" "$HOME/.config/gtk-4.0/settings.ini" 2>/dev/null || true
-        ln -sfn "$THEMES_DIR/current/gtk.css" "$HOME/.config/gtk-3.0/gtk.css" 2>/dev/null || true
-        ln -sfn "$THEMES_DIR/current/gtk.css" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
+        :
       fi
     '';
 
@@ -155,55 +106,6 @@ EOF
 
         pkill -USR2 opencode 2>/dev/null || true
 
-        ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "${cfg.gtk.iconTheme.name}")
-        if [ "$ICON_THEME" != "${cfg.gtk.iconTheme.name}" ] && ! [ -e "/run/current-system/sw/share/icons/$ICON_THEME" ] && ! [ -e "$HOME/.local/share/icons/$ICON_THEME" ] && ! [ -e "$HOME/.icons/$ICON_THEME" ]; then
-          ICON_THEME="${cfg.gtk.iconTheme.name}"
-        fi
-        ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'$ICON_THEME'"
-        GTK_THEME_FILE="$CURRENT/gtk.theme"
-        if [ -f "$GTK_THEME_FILE" ]; then
-          GTK_THEME=$(cat "$GTK_THEME_FILE")
-        elif [ -f "$CURRENT/light.mode" ]; then
-          GTK_THEME="Adwaita"
-        else
-          GTK_THEME="Adwaita-dark"
-        fi
-        ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/gtk-theme "'$GTK_THEME'"
-        if [ -f "$CURRENT/light.mode" ]; then
-          ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-light'"
-        else
-          ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
-        fi
-        ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cfg.gtk.cursorTheme.name}'"
-        ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-size ${toString cfg.gtk.cursorTheme.size}
-
-        if [ -f "$CURRENT/light.mode" ]; then
-          GTK_THEME_EXPORT="$GTK_THEME"
-        else
-          case "$GTK_THEME" in
-            *-dark) GTK_THEME_EXPORT="$GTK_THEME" ;;
-            *)      GTK_THEME_EXPORT="$GTK_THEME:dark" ;;
-          esac
-        fi
-        mkdir -p "$HOME/.config/environment.d"
-        cat > "$HOME/.config/environment.d/theme.conf" << EOF
-GTK_THEME=$GTK_THEME_EXPORT
-ADW_DISABLE_PORTAL=1
-EOF
-        export GTK_THEME="$GTK_THEME_EXPORT"
-        export ADW_DISABLE_PORTAL=1
-        ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME ADW_DISABLE_PORTAL
-        hyprctl setenv GTK_THEME "$GTK_THEME_EXPORT" 2>/dev/null || true
-        hyprctl setenv ADW_DISABLE_PORTAL 1 2>/dev/null || true
-
-        mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
-        rm -f "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/gtk.css" \
-              "$HOME/.config/gtk-4.0/settings.ini" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
-        ln -sfn "$CURRENT/settings-gtk3.ini" "$HOME/.config/gtk-3.0/settings.ini" 2>/dev/null || true
-        ln -sfn "$CURRENT/settings-gtk4.ini" "$HOME/.config/gtk-4.0/settings.ini" 2>/dev/null || true
-        ln -sfn "$CURRENT/gtk.css" "$HOME/.config/gtk-3.0/gtk.css" 2>/dev/null || true
-        ln -sfn "$CURRENT/gtk.css" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
-
         HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
         if [ -d "$HOOK_DIR" ]; then
           for hook in "$HOOK_DIR"/*; do
@@ -242,12 +144,9 @@ EOF
 
         notify-send "Background Changed" "$BG"
       '')
-    ] ++ lib.optional (cfg.gtk.cursorTheme.package != null) cfg.gtk.cursorTheme.package
-      ++ lib.optional (cfg.gtk.iconTheme.package != null) cfg.gtk.iconTheme.package;
+    ];
 
     programs.zsh.initExtra = lib.mkIf config.programs.zsh.enable ''
-      [ -f "$HOME/.config/environment.d/theme.conf" ] && \
-        export $(grep -v '^#' "$HOME/.config/environment.d/theme.conf" | xargs) 2>/dev/null
       alias ts="theme-switcher"
     '';
   };

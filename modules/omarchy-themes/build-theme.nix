@@ -1,5 +1,5 @@
 { lib, pkgs, render }:
-{ name, theme, templates, cursorThemeName, cursorThemeSize, iconThemeName }:
+{ name, theme, templates }:
 let
   themeSrc = pkgs.fetchgit {
     url = theme.url;
@@ -16,30 +16,6 @@ let
   renderedFiles = lib.mapAttrs' (n: content:
     lib.nameValuePair n (pkgs.writeText "omarchy-${name}-${n}" content)
   ) rendered;
-
-  gtkThemeFile = "${themeRoot}/gtk.theme";
-  hasGtkTheme = builtins.pathExists gtkThemeFile;
-  isLight = builtins.pathExists "${themeRoot}/light.mode";
-  gtkThemeName = if hasGtkTheme then lib.strings.removeSuffix "\n" (builtins.readFile gtkThemeFile)
-                 else if isLight then "Adwaita"
-                 else "Adwaita-dark";
-  colorScheme = if isLight then "prefer-light" else "prefer-dark";
-  settingsGtk3Ini = pkgs.writeText "settings-gtk3-${name}.ini" ''
-    [Settings]
-    gtk-theme-name=${gtkThemeName}
-    gtk-icon-theme-name=${iconThemeName}
-    gtk-cursor-theme-name=${cursorThemeName}
-    gtk-cursor-theme-size=${toString cursorThemeSize}
-    gtk-application-prefer-dark-theme=${if isLight then "0" else "1"}
-  '';
-  settingsGtk4Ini = pkgs.writeText "settings-gtk4-${name}.ini" ''
-    [Settings]
-    gtk-theme-name=${gtkThemeName}
-    gtk-icon-theme-name=${iconThemeName}
-    gtk-cursor-theme-name=${cursorThemeName}
-    gtk-cursor-theme-size=${toString cursorThemeSize}
-    gtk-application-prefer-dark-theme=${if isLight then "0" else "1"}
-  '';
 in
 pkgs.runCommandLocal "omarchy-theme-${name}" { } ''
   mkdir -p "$out"
@@ -53,9 +29,6 @@ pkgs.runCommandLocal "omarchy-theme-${name}" { } ''
       cp "${filePath}" "$out/${lib.escapeShellArg n}"
     fi
   '') renderedFiles)}
-
-  cp "${settingsGtk3Ini}" "$out/settings-gtk3.ini"
-  cp "${settingsGtk4Ini}" "$out/settings-gtk4.ini"
 
   ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
     echo "${theme.defaultBackground}" > "$out/default-background"
