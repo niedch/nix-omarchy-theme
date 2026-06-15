@@ -15,7 +15,7 @@ in {
       mkdir -p "$THEMES_DIR"
 
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: theme: ''
-        theme_path="${buildTheme { inherit name theme; templates = cfg.templates; cursorThemeName = cfg.gtk.cursorTheme.name; cursorThemeSize = cfg.gtk.cursorTheme.size; }}"
+        theme_path="${buildTheme { inherit name theme; templates = cfg.templates; cursorThemeName = cfg.gtk.cursorTheme.name; cursorThemeSize = cfg.gtk.cursorTheme.size; iconThemeName = cfg.gtk.iconTheme; }}"
         if [ ! "$(readlink -f "$THEMES_DIR/${name}" 2>/dev/null)" = "$theme_path" ]; then
           ln -sfn "$theme_path" "$THEMES_DIR/${name}"
         fi
@@ -54,6 +54,8 @@ in {
           fi
           ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cfg.gtk.cursorTheme.name}'"
           ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-size ${toString cfg.gtk.cursorTheme.size}
+          ICON_THEME=$(cat "$THEMES_DIR/current/icons.theme" 2>/dev/null || echo "${cfg.gtk.iconTheme}")
+          ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'$ICON_THEME'"
         fi
 
         if [ -f "$THEMES_DIR/current/light.mode" ]; then
@@ -66,6 +68,7 @@ in {
         fi
         mkdir -p "$HOME/.config/environment.d"
         echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
+        export GTK_THEME="$GTK_THEME_EXPORT"
         ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME || true
 
         mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
@@ -143,7 +146,7 @@ in {
 
         pkill -USR2 opencode 2>/dev/null || true
 
-        ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
+        ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "${cfg.gtk.iconTheme}")
         ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'$ICON_THEME'"
         GTK_THEME_FILE="$CURRENT/gtk.theme"
         if [ -f "$GTK_THEME_FILE" ]; then
@@ -172,6 +175,7 @@ in {
         fi
         mkdir -p "$HOME/.config/environment.d"
         echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
+        export GTK_THEME="$GTK_THEME_EXPORT"
         ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME
 
         mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
@@ -223,6 +227,8 @@ in {
     ] ++ lib.optional (cfg.gtk.cursorTheme.package != null) cfg.gtk.cursorTheme.package;
 
     programs.zsh.initExtra = lib.mkIf config.programs.zsh.enable ''
+      [ -f "$HOME/.config/environment.d/theme.conf" ] && \
+        export $(grep -v '^#' "$HOME/.config/environment.d/theme.conf" | xargs) 2>/dev/null
       alias ts="theme-switcher"
     '';
   };

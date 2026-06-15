@@ -1,5 +1,5 @@
 { lib, pkgs, render }:
-{ name, theme, templates, cursorThemeName, cursorThemeSize }:
+{ name, theme, templates, cursorThemeName, cursorThemeSize, iconThemeName }:
 let
   themeSrc = pkgs.fetchgit {
     url = theme.url;
@@ -27,6 +27,7 @@ let
   settingsGtk3Ini = pkgs.writeText "settings-gtk3-${name}.ini" ''
     [Settings]
     gtk-theme-name=${gtkThemeName}
+    gtk-icon-theme-name=${iconThemeName}
     gtk-cursor-theme-name=${cursorThemeName}
     gtk-cursor-theme-size=${toString cursorThemeSize}
     gtk-application-prefer-dark-theme=${if isLight then "0" else "1"}
@@ -34,6 +35,7 @@ let
   settingsGtk4Ini = pkgs.writeText "settings-gtk4-${name}.ini" ''
     [Settings]
     gtk-theme-name=${gtkThemeName}
+    gtk-icon-theme-name=${iconThemeName}
     gtk-cursor-theme-name=${cursorThemeName}
     gtk-cursor-theme-size=${toString cursorThemeSize}
     gtk-application-prefer-dark-theme=${if isLight then "0" else "1"}

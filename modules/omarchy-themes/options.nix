@@ -98,6 +98,11 @@
     gtk = lib.mkOption {
       type = lib.types.submodule {
         options = {
+          iconTheme = lib.mkOption {
+            type = lib.types.str;
+            default = "Adwaita";
+            description = "Icon theme name (can be overridden per-theme via icons.theme file)";
+          };
           cursorTheme = {
             name = lib.mkOption {
               type = lib.types.str;
