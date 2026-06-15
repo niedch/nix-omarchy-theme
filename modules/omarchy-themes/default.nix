@@ -68,12 +68,13 @@ in {
         echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
         ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME || true
 
-        for dir in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
-          mkdir -p "$dir"
-          rm -f "$dir/settings.ini" "$dir/gtk.css" 2>/dev/null || true
-          ln -sfn "$THEMES_DIR/current/settings.ini" "$dir/settings.ini" 2>/dev/null || true
-          ln -sfn "$THEMES_DIR/current/gtk.css" "$dir/gtk.css" 2>/dev/null || true
-        done
+        mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
+        rm -f "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/gtk.css" \
+              "$HOME/.config/gtk-4.0/settings.ini" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
+        ln -sfn "$THEMES_DIR/current/settings-gtk3.ini" "$HOME/.config/gtk-3.0/settings.ini" 2>/dev/null || true
+        ln -sfn "$THEMES_DIR/current/settings-gtk4.ini" "$HOME/.config/gtk-4.0/settings.ini" 2>/dev/null || true
+        ln -sfn "$THEMES_DIR/current/gtk.css" "$HOME/.config/gtk-3.0/gtk.css" 2>/dev/null || true
+        ln -sfn "$THEMES_DIR/current/gtk.css" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
       fi
     '';
 
@@ -173,12 +174,13 @@ in {
         echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
         ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME
 
-        for dir in "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"; do
-          mkdir -p "$dir"
-          rm -f "$dir/settings.ini" "$dir/gtk.css" 2>/dev/null || true
-          ln -sfn "$CURRENT/settings.ini" "$dir/settings.ini" 2>/dev/null || true
-          ln -sfn "$CURRENT/gtk.css" "$dir/gtk.css" 2>/dev/null || true
-        done
+        mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
+        rm -f "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/gtk.css" \
+              "$HOME/.config/gtk-4.0/settings.ini" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
+        ln -sfn "$CURRENT/settings-gtk3.ini" "$HOME/.config/gtk-3.0/settings.ini" 2>/dev/null || true
+        ln -sfn "$CURRENT/settings-gtk4.ini" "$HOME/.config/gtk-4.0/settings.ini" 2>/dev/null || true
+        ln -sfn "$CURRENT/gtk.css" "$HOME/.config/gtk-3.0/gtk.css" 2>/dev/null || true
+        ln -sfn "$CURRENT/gtk.css" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null || true
 
         HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
         if [ -d "$HOOK_DIR" ]; then

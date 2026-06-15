@@ -24,7 +24,14 @@ let
                  else if isLight then "Adwaita"
                  else "Adwaita-dark";
   colorScheme = if isLight then "prefer-light" else "prefer-dark";
-  settingsIni = pkgs.writeText "settings-${name}.ini" ''
+  settingsGtk3Ini = pkgs.writeText "settings-gtk3-${name}.ini" ''
+    [Settings]
+    gtk-theme-name=${gtkThemeName}
+    gtk-cursor-theme-name=${cursorThemeName}
+    gtk-cursor-theme-size=${toString cursorThemeSize}
+    gtk-application-prefer-dark-theme=${if isLight then "0" else "1"}
+  '';
+  settingsGtk4Ini = pkgs.writeText "settings-gtk4-${name}.ini" ''
     [Settings]
     gtk-theme-name=${gtkThemeName}
     gtk-cursor-theme-name=${cursorThemeName}
@@ -46,9 +53,8 @@ pkgs.runCommandLocal "omarchy-theme-${name}" { } ''
     fi
   '') renderedFiles)}
 
-  if [ ! -f "$out/settings.ini" ]; then
-    cp "${settingsIni}" "$out/settings.ini"
-  fi
+  cp "${settingsGtk3Ini}" "$out/settings-gtk3.ini"
+  cp "${settingsGtk4Ini}" "$out/settings-gtk4.ini"
 
   ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
     echo "${theme.defaultBackground}" > "$out/default-background"
