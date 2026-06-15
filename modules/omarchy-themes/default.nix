@@ -15,7 +15,7 @@ in {
       mkdir -p "$THEMES_DIR"
 
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: theme: ''
-        theme_path="${buildTheme { inherit name theme; templates = cfg.templates; cursorThemeName = cfg.gtk.cursorTheme.name; cursorThemeSize = cfg.gtk.cursorTheme.size; iconThemeName = cfg.gtk.iconTheme; }}"
+        theme_path="${buildTheme { inherit name theme; templates = cfg.templates; cursorThemeName = cfg.gtk.cursorTheme.name; cursorThemeSize = cfg.gtk.cursorTheme.size; iconThemeName = cfg.gtk.iconTheme.name; }}"
         if [ ! "$(readlink -f "$THEMES_DIR/${name}" 2>/dev/null)" = "$theme_path" ]; then
           ln -sfn "$theme_path" "$THEMES_DIR/${name}"
         fi
@@ -54,7 +54,10 @@ in {
           fi
           ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cfg.gtk.cursorTheme.name}'"
           ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-size ${toString cfg.gtk.cursorTheme.size}
-          ICON_THEME=$(cat "$THEMES_DIR/current/icons.theme" 2>/dev/null || echo "${cfg.gtk.iconTheme}")
+          ICON_THEME=$(cat "$THEMES_DIR/current/icons.theme" 2>/dev/null || echo "${cfg.gtk.iconTheme.name}")
+          if [ "$ICON_THEME" != "${cfg.gtk.iconTheme.name}" ] && ! [ -e "/run/current-system/sw/share/icons/$ICON_THEME" ] && ! [ -e "$HOME/.local/share/icons/$ICON_THEME" ] && ! [ -e "$HOME/.icons/$ICON_THEME" ]; then
+            ICON_THEME="${cfg.gtk.iconTheme.name}"
+          fi
           ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'$ICON_THEME'"
         fi
 
@@ -70,6 +73,7 @@ in {
         echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
         export GTK_THEME="$GTK_THEME_EXPORT"
         ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME || true
+        hyprctl setenv GTK_THEME "$GTK_THEME_EXPORT" 2>/dev/null || true
 
         mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
         rm -f "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/gtk.css" \
@@ -146,7 +150,10 @@ in {
 
         pkill -USR2 opencode 2>/dev/null || true
 
-        ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "${cfg.gtk.iconTheme}")
+        ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "${cfg.gtk.iconTheme.name}")
+        if [ "$ICON_THEME" != "${cfg.gtk.iconTheme.name}" ] && ! [ -e "/run/current-system/sw/share/icons/$ICON_THEME" ] && ! [ -e "$HOME/.local/share/icons/$ICON_THEME" ] && ! [ -e "$HOME/.icons/$ICON_THEME" ]; then
+          ICON_THEME="${cfg.gtk.iconTheme.name}"
+        fi
         ${pkgs.dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'$ICON_THEME'"
         GTK_THEME_FILE="$CURRENT/gtk.theme"
         if [ -f "$GTK_THEME_FILE" ]; then
@@ -177,6 +184,7 @@ in {
         echo "GTK_THEME=$GTK_THEME_EXPORT" > "$HOME/.config/environment.d/theme.conf"
         export GTK_THEME="$GTK_THEME_EXPORT"
         ${pkgs.systemd}/bin/systemctl --user import-environment GTK_THEME
+        hyprctl setenv GTK_THEME "$GTK_THEME_EXPORT" 2>/dev/null || true
 
         mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
         rm -f "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/gtk.css" \
@@ -224,7 +232,8 @@ in {
 
         notify-send "Background Changed" "$BG"
       '')
-    ] ++ lib.optional (cfg.gtk.cursorTheme.package != null) cfg.gtk.cursorTheme.package;
+    ] ++ lib.optional (cfg.gtk.cursorTheme.package != null) cfg.gtk.cursorTheme.package
+      ++ lib.optional (cfg.gtk.iconTheme.package != null) cfg.gtk.iconTheme.package;
 
     programs.zsh.initExtra = lib.mkIf config.programs.zsh.enable ''
       [ -f "$HOME/.config/environment.d/theme.conf" ] && \
