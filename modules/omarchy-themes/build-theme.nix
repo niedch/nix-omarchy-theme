@@ -1,6 +1,12 @@
-{ lib, pkgs, render }:
-{ name, theme, templates }:
-let
+{
+  lib,
+  pkgs,
+  render,
+}: {
+  name,
+  theme,
+  templates,
+}: let
   themeSrc = pkgs.fetchgit {
     url = theme.url;
     rev = theme.ref;
@@ -9,28 +15,36 @@ let
   themeRoot = "${themeSrc}/${theme.subpath}";
   colorsFile = "${themeRoot}/colors.toml";
   hasColors = builtins.pathExists colorsFile;
-  colors = if hasColors then builtins.fromTOML (builtins.readFile colorsFile) else { };
-  rendered = if hasColors then
-    lib.mapAttrs (n: t: render.renderTemplate colors t) templates
-  else { };
-  renderedFiles = lib.mapAttrs' (n: content:
-    lib.nameValuePair n (pkgs.writeText "omarchy-${name}-${n}" content)
-  ) rendered;
+  colors =
+    if hasColors
+    then builtins.fromTOML (builtins.readFile colorsFile)
+    else {};
+  rendered =
+    if hasColors
+    then lib.mapAttrs (n: t: render.renderTemplate colors t) templates
+    else {};
+  renderedFiles =
+    lib.mapAttrs' (
+      n: content:
+        lib.nameValuePair n (pkgs.writeText "omarchy-${name}-${n}" content)
+    )
+    rendered;
 in
-pkgs.runCommandLocal "omarchy-theme-${name}" { } ''
-  mkdir -p "$out"
+  pkgs.runCommandLocal "omarchy-theme-${name}" {} ''
+    mkdir -p "$out"
 
-  cp -r ${themeRoot}/* "$out/"
+    cp -r ${themeRoot}/* "$out/"
 
-  rm -rf "$out/.git" 2>/dev/null || true
+    rm -rf "$out/.git" 2>/dev/null || true
 
-  ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: filePath: ''
-    if [ ! -f "$out/${lib.escapeShellArg n}" ]; then
-      cp "${filePath}" "$out/${lib.escapeShellArg n}"
-    fi
-  '') renderedFiles)}
+    ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: filePath: ''
+        if [ ! -f "$out/${lib.escapeShellArg n}" ]; then
+          cp "${filePath}" "$out/${lib.escapeShellArg n}"
+        fi
+      '')
+      renderedFiles)}
 
-  ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
-    echo "${theme.defaultBackground}" > "$out/default-background"
-  ''}
-''
+    ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
+      echo "${theme.defaultBackground}" > "$out/default-background"
+    ''}
+  ''

@@ -1,5 +1,8 @@
-{ lib, pkgs, defaultTemplates }:
 {
+  lib,
+  pkgs,
+  defaultTemplates,
+}: {
   options.omarchy-themes = {
     enable = lib.mkEnableOption "multi-theme manager with live switching";
 
@@ -46,7 +49,7 @@
           };
         };
       });
-      default = { };
+      default = {};
       description = "Attribute set of theme definitions";
     };
 
@@ -83,11 +86,11 @@
           };
         };
       });
-      default = { };
+      default = {};
       example = {
-        hypr = { };
-        waybar = { };
-        wallpapers = { source = "wallpapers"; };
+        hypr = {};
+        waybar = {};
+        wallpapers = {source = "wallpapers";};
       };
       description = ''
         XDG config directories to symlink from the current theme.
