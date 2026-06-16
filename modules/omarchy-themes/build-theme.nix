@@ -35,6 +35,8 @@ in
 
     cp -r ${themeRoot}/* "$out/"
 
+    chmod -R u+w "$out"
+
     rm -rf "$out/.git" 2>/dev/null || true
 
     ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: filePath: ''
