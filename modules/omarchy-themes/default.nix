@@ -60,6 +60,11 @@ in {
               ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
               ${pkgs.glib.bin}/bin/gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
 
+              mkdir -p "$HOME/.config/gtk-3.0"
+              ln -sfn "$CURRENT/settings-3.0.ini" "$HOME/.config/gtk-3.0/settings.ini"
+              mkdir -p "$HOME/.config/gtk-4.0"
+              ln -sfn "$CURRENT/settings-4.0.ini" "$HOME/.config/gtk-4.0/settings.ini"
+
               THEME_HEX="#1c2027"
               if [ -f "$CURRENT/chromium.theme" ]; then
                 CHROMIUM_RGB=$(cat "$CURRENT/chromium.theme")
@@ -78,7 +83,7 @@ in {
                 "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed"; do
                 mkdir -p "$policy_dir"
                 cat > "$policy_dir/color.json" << EOF
-      {"BrowserThemeColor": "$THEME_HEX", "BrowserColorScheme": 3}
+      {"BrowserThemeColor": "$THEME_HEX"}
       EOF
             done
 
@@ -136,6 +141,11 @@ in {
                 ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
                 ${pkgs.glib.bin}/bin/gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
 
+                mkdir -p "$HOME/.config/gtk-3.0"
+                ln -sfn "$CURRENT/settings-3.0.ini" "$HOME/.config/gtk-3.0/settings.ini"
+                mkdir -p "$HOME/.config/gtk-4.0"
+                ln -sfn "$CURRENT/settings-4.0.ini" "$HOME/.config/gtk-4.0/settings.ini"
+
                 THEME_HEX="#1c2027"
                 if [ -f "$CURRENT/chromium.theme" ]; then
                   CHROMIUM_RGB=$(cat "$CURRENT/chromium.theme")
@@ -154,8 +164,8 @@ in {
                   "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed"; do
                   mkdir -p "$policy_dir"
                   cat > "$policy_dir/color.json" << EOF
-        {"BrowserThemeColor": "$THEME_HEX", "BrowserColorScheme": 3}
-        EOF
+      {"BrowserThemeColor": "$THEME_HEX"}
+      EOF
                 done
 
                 CURRENT_BG="${themesDir}/current-background"

@@ -60,4 +60,29 @@ in
       mkdir -p "$out/backgrounds"
       cp ${fetched} "$out/backgrounds/${lib.escapeShellArg fname}"
     '') (theme.extraBackgrounds or []))}
+
+    GTK_THEME="Adwaita-dark"
+    if [ -f "$out/light.mode" ]; then
+      GTK_THEME="Adwaita"
+    fi
+    if [ -f "$out/gtk.theme" ]; then
+      GTK_THEME=$(cat "$out/gtk.theme")
+    fi
+
+    if [ -f "$out/light.mode" ]; then
+      PREFER_DARK="0"
+    else
+      PREFER_DARK="1"
+    fi
+
+    ICON_THEME=$(cat "$out/icons.theme" 2>/dev/null || echo "Adwaita")
+
+    for version in 3.0 4.0; do
+      cat > "$out/settings-$version.ini" << EOF
+[Settings]
+gtk-theme-name=$GTK_THEME
+gtk-application-prefer-dark-theme=$PREFER_DARK
+gtk-icon-theme-name=$ICON_THEME
+EOF
+    done
   ''
