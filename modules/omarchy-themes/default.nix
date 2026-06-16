@@ -37,6 +37,7 @@ in {
           ln -sfn "$THEMES_DIR/current/backgrounds/$FIRST_BG" "$THEMES_DIR/current-background"
         fi
 
+        GSETTINGS_SCHEMA_DIR="${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/gsettings-desktop-schemas-${pkgs.gsettings-desktop-schemas.version}/glib-2.0/schemas"
         CURRENT="$THEMES_DIR/current"
         if [ -f "$CURRENT/gtk.theme" ]; then
           GTK_THEME=$(cat "$CURRENT/gtk.theme")
@@ -45,11 +46,11 @@ in {
         else
           GTK_THEME="Adwaita-dark"
         fi
-        gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface color-scheme \
+        ${pkgs.glib.bin}/bin/gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
+        ${pkgs.glib.bin}/bin/gsettings set org.gnome.desktop.interface color-scheme \
           "$([ -f "$CURRENT/light.mode" ] && echo "prefer-light" || echo "prefer-dark")" 2>/dev/null || true
         ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
-        gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
+        ${pkgs.glib.bin}/bin/gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
 
         :
       fi
@@ -66,6 +67,7 @@ in {
     home.packages = with pkgs; [
       dconf
       glib
+      gsettings-desktop-schemas
       gtk4
       libadwaita
       adwaita-icon-theme
@@ -74,6 +76,7 @@ in {
         set -euo pipefail
 
         export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
+        export GSETTINGS_SCHEMA_DIR="${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/gsettings-desktop-schemas-${pkgs.gsettings-desktop-schemas.version}/glib-2.0/schemas"
 
         THEMES_DIR="${themesDir}"
         CURRENT="${currentLink}"
@@ -93,11 +96,11 @@ in {
         else
           GTK_THEME="Adwaita-dark"
         fi
-        gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface color-scheme \
+        ${pkgs.glib.bin}/bin/gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
+        ${pkgs.glib.bin}/bin/gsettings set org.gnome.desktop.interface color-scheme \
           "$([ -f "$CURRENT/light.mode" ] && echo "prefer-light" || echo "prefer-dark")" 2>/dev/null || true
         ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
-        gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
+        ${pkgs.glib.bin}/bin/gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
 
         CURRENT_BG="${themesDir}/current-background"
         DEFAULT_BG=""
