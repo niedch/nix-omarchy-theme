@@ -47,4 +47,15 @@ in
     ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
       echo "${theme.defaultBackground}" > "$out/default-background"
     ''}
+
+    ${lib.concatStringsSep "\n" (builtins.map (bg: let
+      fname = if bg.filename != null then bg.filename else builtins.baseNameOf bg.url;
+      fetched = pkgs.fetchurl {
+        url = bg.url;
+        hash = bg.hash;
+      };
+    in ''
+      mkdir -p "$out/backgrounds"
+      cp ${fetched} "$out/backgrounds/${lib.escapeShellArg fname}"
+    '') (theme.extraBackgrounds or []))}
   ''

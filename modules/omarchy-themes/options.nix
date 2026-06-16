@@ -47,6 +47,31 @@
             default = null;
             description = "Default background filename. null = use first file alphabetically.";
           };
+          extraBackgrounds = lib.mkOption {
+            type = lib.types.listOf (lib.types.submodule {
+              options = {
+                url = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Direct URL to download the background image from";
+                };
+                hash = lib.mkOption {
+                  type = lib.types.str;
+                  description = "SRI hash of the downloaded file (e.g. sha256-...)";
+                };
+                filename = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "Override filename in backgrounds/. Defaults to URL basename.";
+                };
+              };
+            });
+            default = [];
+            description = ''
+              Extra background images to download into the theme's backgrounds/ directory.
+              Each entry specifies a direct image URL and its expected hash.
+              The filename is derived from the URL by default, or can be overridden.
+            '';
+          };
         };
       });
       default = {};
