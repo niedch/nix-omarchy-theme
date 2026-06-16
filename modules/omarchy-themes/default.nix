@@ -72,7 +72,8 @@ in {
       libnotify
       (writeShellScriptBin "theme-switcher" ''
         set -euo pipefail
-        set -x
+
+        export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
 
         THEMES_DIR="${themesDir}"
         CURRENT="${currentLink}"
