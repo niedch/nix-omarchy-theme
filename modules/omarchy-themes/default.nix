@@ -84,6 +84,19 @@ in {
 
         ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
 
+        if [ -f "$CURRENT/gtk.theme" ]; then
+          GTK_THEME=$(cat "$CURRENT/gtk.theme")
+        elif [ -f "$CURRENT/light.mode" ]; then
+          GTK_THEME="Adwaita"
+        else
+          GTK_THEME="Adwaita-dark"
+        fi
+        gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
+        gsettings set org.gnome.desktop.interface color-scheme \
+          "$([ -f "$CURRENT/light.mode" ] && echo "prefer-light" || echo "prefer-dark")" 2>/dev/null || true
+        ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
+        gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
+
         CURRENT_BG="${themesDir}/current-background"
         DEFAULT_BG=""
         DEFAULT_BG_FILE="$CURRENT/default-background"
@@ -124,21 +137,6 @@ in {
         pkill -SIGUSR2 btop 2>/dev/null || true
 
         pkill -USR2 opencode 2>/dev/null || true
-
-        if [ -f "$CURRENT/gtk.theme" ]; then
-          GTK_THEME=$(cat "$CURRENT/gtk.theme")
-        elif [ -f "$CURRENT/light.mode" ]; then
-          GTK_THEME="Adwaita"
-        else
-          GTK_THEME="Adwaita-dark"
-        fi
-
-        gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface color-scheme \
-          "$([ -f "$CURRENT/light.mode" ] && echo "prefer-light" || echo "prefer-dark")" 2>/dev/null || true
-
-        ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
-        gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
 
         HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
         if [ -d "$HOOK_DIR" ]; then
