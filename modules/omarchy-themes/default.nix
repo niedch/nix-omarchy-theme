@@ -78,9 +78,9 @@ in {
                 "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed"; do
                 mkdir -p "$policy_dir"
                 cat > "$policy_dir/color.json" << EOF
-      {"BrowserThemeColor": "$THEME_HEX", "BrowserColorScheme": "device"}
+      {"BrowserThemeColor": "$THEME_HEX", "BrowserColorScheme": 3}
       EOF
-              done
+            done
 
               :
             fi
@@ -154,7 +154,7 @@ in {
                   "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed"; do
                   mkdir -p "$policy_dir"
                   cat > "$policy_dir/color.json" << EOF
-        {"BrowserThemeColor": "$THEME_HEX", "BrowserColorScheme": "device"}
+        {"BrowserThemeColor": "$THEME_HEX", "BrowserColorScheme": 3}
         EOF
                 done
 
