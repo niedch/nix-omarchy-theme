@@ -72,6 +72,7 @@ in {
       libnotify
       (writeShellScriptBin "theme-switcher" ''
         set -euo pipefail
+        set -x
 
         THEMES_DIR="${themesDir}"
         CURRENT="${currentLink}"
