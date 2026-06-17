@@ -186,26 +186,15 @@ in {
                   else
                     ln -sfn "$CURRENT/backgrounds/$FIRST_BG" "$CURRENT_BG"
                   fi
-                  systemctl --user restart swaybg.service 2>/dev/null || true
                 fi
 
                 hyprctl reload 2>/dev/null || true
-
-                pkill waybar 2>/dev/null || true
-                if systemctl --user --quiet is-active waybar 2>/dev/null; then
-                  systemctl --user restart waybar 2>/dev/null || true
-                else
-                  setsid waybar &>/dev/null &
-                fi
-
                 pkill -USR2 ghostty 2>/dev/null || true
-
                 makoctl reload 2>/dev/null || true
 
-                systemctl --user restart elephant.service walker.service 2>/dev/null || true
+                systemctl --user restart elephant.service walker.service swaybg.service waybar.service 2>/dev/null || true
 
                 pkill -SIGUSR2 btop 2>/dev/null || true
-
                 pkill -USR2 opencode 2>/dev/null || true
 
                 HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
