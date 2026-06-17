@@ -186,8 +186,7 @@ in {
                   else
                     ln -sfn "$CURRENT/backgrounds/$FIRST_BG" "$CURRENT_BG"
                   fi
-                  pkill swaybg 2>/dev/null || true
-                  setsid swaybg -i "$CURRENT_BG" -m fill &>/dev/null &
+                  systemctl --user restart swaybg.service 2>/dev/null || true
                 fi
 
                 hyprctl reload 2>/dev/null || true
@@ -242,8 +241,7 @@ in {
 
         ln -sfn "$BG_DIR/$BG" "$CURRENT_BG"
 
-        pkill swaybg 2>/dev/null || true
-        setsid swaybg -i "$CURRENT_BG" -m fill &>/dev/null &
+        systemctl --user restart swaybg.service 2>/dev/null || true
 
         notify-send "Background Changed" "$BG"
       '')
