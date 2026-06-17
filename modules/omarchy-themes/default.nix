@@ -192,7 +192,7 @@ in {
                 pkill -USR2 ghostty 2>/dev/null || true
                 makoctl reload 2>/dev/null || true
 
-                if pgrep obsidian &>/dev/null; then
+                if pgrep -f obsidian &>/dev/null; then
                   obsidian-cli eval "code=document.location.reload()" 2>/dev/null || true
                 fi
 
