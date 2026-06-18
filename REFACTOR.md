@@ -50,13 +50,15 @@ Key differences from original:
 | theme-switcher script body | 102 | 47 | 55 |
 | `scripts.nix` | — | 82 | (new) |
 
-### Post-refactoring fix: removed GTK config symlinks from `applyGtkConfig`
+### Post-refactoring fix: re-added GTK config symlinks to `applyGtkConfig`
 
-The original `applyGtkConfig` also ran `ln -sfn` to create `~/.config/gtk-{3,4}.0/settings.ini`
-symlinks. This conflicted with the `xdg.configFile` mechanism (configured via the user's
-`omarchy-themes.symlinks`), which manages the exact same files. Since the `symlinks` →
-`${currentLink}/settings-*.ini` chain follows theme switches dynamically, the redundant
-`ln -sfn` was removed from `applyGtkConfig`.
+The `ln -sfn` symlinks for `~/.config/gtk-{3,4}.0/settings.ini` were originally removed
+from `applyGtkConfig` because the `xdg.configFile` mechanism was thought to handle it.
+However, the build step generates `settings-3.0.ini`/`settings-4.0.ini` (not `settings.ini`),
+and there is no default `gtk-3.0`/`gtk-4.0` symlink entry. Even if a user added one, the
+file name mismatch would prevent GTK apps from finding it. The symlinks were restored in
+`scripts.nix:18-20` so that `~/.config/gtk-3.0/settings.ini` → `${currentLink}/settings-3.0.ini`
+(and same for 4.0), ensuring GTK3/GTK4 apps (including Nautilus) pick up the correct theme.
 
 ## Files Unchanged
 
