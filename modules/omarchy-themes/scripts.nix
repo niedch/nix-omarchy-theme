@@ -22,9 +22,12 @@ in {
 
   applyChromiumColor = ''
         THEME_HEX="#1c2027"
+        if [ -f "$CURRENT/light.mode" ]; then
+          THEME_HEX="#eff1f5"
+        fi
         if [ -f "$CURRENT/chromium.theme" ]; then
           CHROMIUM_RGB=$(cat "$CURRENT/chromium.theme")
-          THEME_HEX=$(printf '#%02x%02x%02x' $(echo "$CHROMIUM_RGB" | tr ',' ' ') 2>/dev/null || echo "#1c2027")
+          THEME_HEX=$(printf '#%02x%02x%02x' $(echo "$CHROMIUM_RGB" | tr ',' ' ') 2>/dev/null || echo "$THEME_HEX")
         fi
         for policy_dir in \
           "$HOME/.config/brave/Policies/managed" \
