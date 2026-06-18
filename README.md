@@ -184,6 +184,73 @@ Place executable scripts in:
 | `walker.css` | Walker launcher |
 | `waybar.css` | Waybar |
 
+## Consumer-side app setup
+
+Some applications need explicit configuration to point at the theme files rendered to `~/.local/share/themes/current/`. Below are the common setups.
+
+<details>
+<summary><b>Ghostty</b> — load theme config at startup</summary>
+
+Point Ghostty's `config-file` at the theme's rendered `ghostty.conf`:
+
+```nix
+programs.ghostty = {
+  enable = true;
+  settings = {
+    "config-file" = "?~/.local/share/themes/current/ghostty.conf";
+  };
+};
+```
+
+The `?` prefix means "load if the file exists, silently skip otherwise."
+</details>
+
+<details>
+<summary><b>Neovim</b> — load theme Lua plugin specs at startup</summary>
+
+If your theme repo ships a `neovim.lua` file, load it from your lazy/plugin setup:
+
+```lua
+local theme_file = vim.fn.expand("~/.local/share/themes/current/neovim.lua")
+if vim.loop.fs_stat(theme_file) then
+  vim.list_extend(plugins, dofile(theme_file))
+end
+```
+
+Theme repos can override the `neovim.lua` template (or provide their own) to inject color scheme commands, highlight overrides, or additional plugin specs at runtime.
+</details>
+
+<details>
+<summary><b>Obsidian</b> — symlink theme CSS into your vault</summary>
+
+Symlink the rendered `obsidian.css` into your vault's snippets folder:
+
+```nix
+home.file."path/to/your-vault/.obsidian/snippets/obsidian.css" = {
+  source = config.lib.file.mkOutOfStoreSymlink
+    "${config.home.homeDirectory}/.local/share/themes/current/obsidian.css";
+};
+```
+
+Then enable the snippet in Obsidian's **Settings → Appearance → CSS snippets**.
+</details>
+
+<details>
+<summary><b>swaybg</b> — point wallpaper service at theme background</summary>
+
+Point the swaybg systemd service at the `current-background` symlink that nix-omarchy-theme maintains:
+
+```nix
+systemd.user.services.swaybg = {
+  Service = {
+    ExecStart = "${pkgs.swaybg}/bin/swaybg -i %h/.local/share/themes/current-background -m fill";
+  };
+};
+```
+
+The `current-background` symlink is updated automatically whenever a theme is switched.
+</details>
+
 ## Development
 
 ```sh
