@@ -23,15 +23,15 @@ in {
       mkdir -p "$THEMES_DIR"
 
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: theme: ''
-        theme_path="${buildTheme {
-          inherit name theme;
-          templates = cfg.templates;
-        }}"
-        if [ ! "$(readlink -f "$THEMES_DIR/${name}" 2>/dev/null)" = "$theme_path" ]; then
-          ln -sfn "$theme_path" "$THEMES_DIR/${name}"
-        fi
-      '')
-      cfg.themes)}
+          theme_path="${buildTheme {
+            inherit name theme;
+            templates = cfg.templates;
+          }}"
+          if [ ! "$(readlink -f "$THEMES_DIR/${name}" 2>/dev/null)" = "$theme_path" ]; then
+            ln -sfn "$theme_path" "$THEMES_DIR/${name}"
+          fi
+        '')
+        cfg.themes)}
 
       if [ -d "$THEMES_DIR/${cfg.defaultTheme}" ]; then
         ln -sfn "$THEMES_DIR/${cfg.defaultTheme}" "$CURRENT"
@@ -47,25 +47,27 @@ in {
 
     xdg.configFile =
       (lib.mapAttrs' (
-        target: symlink:
-          lib.nameValuePair target {
-            source =
-              config.lib.file.mkOutOfStoreSymlink
-              "${currentLink}/${symlink.source}";
-            recursive = symlink.recursive;
+          target: symlink:
+            lib.nameValuePair target {
+              source =
+                config.lib.file.mkOutOfStoreSymlink
+                "${currentLink}/${symlink.source}";
+              recursive = symlink.recursive;
+            }
+        )
+        cfg.symlinks)
+      // lib.mapAttrs' (
+        name: script:
+          lib.nameValuePair "theme-switcher/hooks/theme-set.d/${name}" {
+            text = ''
+              #!/bin/sh
+              set -euo pipefail
+              ${script}
+            '';
+            executable = true;
           }
       )
-      cfg.symlinks)
-      // lib.mapAttrs' (name: script:
-        lib.nameValuePair "theme-switcher/hooks/theme-set.d/${name}" {
-          text = ''
-            #!/bin/sh
-            set -euo pipefail
-            ${script}
-          '';
-          executable = true;
-        }
-      ) cfg.afterHooks;
+      cfg.afterHooks;
 
     home.packages = with pkgs; [
       dconf

@@ -1,2 +1,2 @@
 args:
-  import ./runtime-switcher.nix args
+import ./runtime-switcher.nix args
