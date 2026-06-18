@@ -25,7 +25,7 @@ in {
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: theme: ''
           theme_path="${buildTheme {
             inherit name theme;
-            templates = cfg.templates;
+            templates = defaultTemplates // cfg.templates;
           }}"
           if [ ! "$(readlink -f "$THEMES_DIR/${name}" 2>/dev/null)" = "$theme_path" ]; then
             ln -sfn "$theme_path" "$THEMES_DIR/${name}"
@@ -67,7 +67,7 @@ in {
             executable = true;
           }
       )
-      cfg.afterHooks;
+      afterHooks // cfg.afterHooks;
 
     home.packages = with pkgs; [
       dconf
