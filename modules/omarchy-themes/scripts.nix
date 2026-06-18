@@ -15,11 +15,6 @@ in {
       "$([ -f "$CURRENT/light.mode" ] && echo "prefer-light" || echo "prefer-dark")" 2>/dev/null || true
     ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
     ${gsettings} set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
-
-    mkdir -p "$HOME/.config/gtk-3.0"
-    ln -sfn "$CURRENT/settings-3.0.ini" "$HOME/.config/gtk-3.0/settings.ini"
-    mkdir -p "$HOME/.config/gtk-4.0"
-    ln -sfn "$CURRENT/settings-4.0.ini" "$HOME/.config/gtk-4.0/settings.ini"
   '';
 
   applyChromiumColor = ''
