@@ -11,6 +11,9 @@
     pkill -SIGUSR2 btop 2>/dev/null || true
     pkill -USR2 opencode 2>/dev/null || true
   '';
+  "90_restart_nautilus" = ''
+    nautilus -q 2>/dev/null || true
+  '';
   "100_notify" = ''
     notify-send "Theme Switched" "$1" -i preferences-desktop-theme
   '';

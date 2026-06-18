@@ -21,8 +21,14 @@
     else {};
   gtkMetadata = let
     hasLightMode = builtins.pathExists "${themeRoot}/light.mode";
-    preferDark = if hasLightMode then "0" else "1";
-    defaultGtkTheme = if hasLightMode then "Adwaita" else "Adwaita-dark";
+    preferDark =
+      if hasLightMode
+      then "0"
+      else "1";
+    defaultGtkTheme =
+      if hasLightMode
+      then "Adwaita"
+      else "Adwaita-dark";
     gtkThemeFile = "${themeRoot}/gtk.theme";
     iconsThemeFile = "${themeRoot}/icons.theme";
   in {
@@ -38,13 +44,16 @@
   };
   renderContext = colors // gtkMetadata;
   rendered = lib.mapAttrs (n: t: render.renderTemplate renderContext t) (
-    if hasColors then templates
+    if hasColors
+    then templates
     else lib.filterAttrs (n: _: lib.hasPrefix "settings-" n) templates
   );
   stripTpl = n: let
     m = builtins.match "(.+)\.tpl" n;
   in
-    if m != null then builtins.head m else n;
+    if m != null
+    then builtins.head m
+    else n;
 
   renderedFiles =
     lib.mapAttrs' (
@@ -54,12 +63,12 @@
     rendered;
 in
   pkgs.runCommandLocal "omarchy-theme-${name}" {} ''
-        mkdir -p "$out"
-        cp -r ${themeRoot}/* "$out/"
-        chmod -R u+w "$out"
-        rm -rf "$out/.git" 2>/dev/null || true
+    mkdir -p "$out"
+    cp -r ${themeRoot}/* "$out/"
+    chmod -R u+w "$out"
+    rm -rf "$out/.git" 2>/dev/null || true
 
-        ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: filePath: ''
+    ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: filePath: ''
         outFile="$out/${lib.escapeShellArg n}"
         if [ ! -f "$outFile" ]; then
           mkdir -p "$(dirname "$outFile")"
@@ -68,11 +77,11 @@ in
       '')
       renderedFiles)}
 
-        ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
+    ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
       echo "${theme.defaultBackground}" > "$out/default-background"
     ''}
 
-        ${lib.concatStringsSep "\n" (builtins.map (bg: let
+    ${lib.concatStringsSep "\n" (builtins.map (bg: let
       fname =
         if bg.filename != null
         then bg.filename
