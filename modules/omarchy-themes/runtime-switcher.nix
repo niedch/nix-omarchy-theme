@@ -96,6 +96,7 @@ in {
         ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
 
         ${scripts.applyGtkConfig}
+        ${scripts.applyChromiumColor}
         ${scripts.selectBackground {preserveCurrentBg = true;}}
 
         HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
