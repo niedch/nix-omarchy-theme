@@ -16,4 +16,6 @@
   "swayosd.css.tpl" = builtins.readFile ./swayosd.css.tpl;
   "walker.css.tpl" = builtins.readFile ./walker.css.tpl;
   "waybar.css.tpl" = builtins.readFile ./waybar.css.tpl;
+  "settings-3.0.ini.tpl" = builtins.readFile ./settings-3.0.ini.tpl;
+  "settings-4.0.ini.tpl" = builtins.readFile ./settings-4.0.ini.tpl;
 }

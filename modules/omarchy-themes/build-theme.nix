@@ -19,10 +19,28 @@
     if hasColors
     then builtins.fromTOML (builtins.readFile colorsFile)
     else {};
-  rendered =
-    if hasColors
-    then lib.mapAttrs (n: t: render.renderTemplate colors t) templates
-    else {};
+  gtkMetadata = let
+    hasLightMode = builtins.pathExists "${themeRoot}/light.mode";
+    preferDark = if hasLightMode then "0" else "1";
+    defaultGtkTheme = if hasLightMode then "Adwaita" else "Adwaita-dark";
+    gtkThemeFile = "${themeRoot}/gtk.theme";
+    iconsThemeFile = "${themeRoot}/icons.theme";
+  in {
+    prefer_dark = preferDark;
+    gtk_theme =
+      if builtins.pathExists gtkThemeFile
+      then lib.strings.removeSuffix "\n" (builtins.readFile gtkThemeFile)
+      else defaultGtkTheme;
+    icon_theme =
+      if builtins.pathExists iconsThemeFile
+      then lib.strings.removeSuffix "\n" (builtins.readFile iconsThemeFile)
+      else "Adwaita";
+  };
+  renderContext = colors // gtkMetadata;
+  rendered = lib.mapAttrs (n: t: render.renderTemplate renderContext t) (
+    if hasColors then templates
+    else lib.filterAttrs (n: _: lib.hasPrefix "settings-" n) templates
+  );
   stripTpl = n: let
     m = builtins.match "(.+)\.tpl" n;
   in
@@ -67,23 +85,4 @@ in
       mkdir -p "$out/backgrounds"
       cp ${fetched} "$out/backgrounds/${lib.escapeShellArg fname}"
     '') (theme.extraBackgrounds or []))}
-
-        GTK_THEME="Adwaita-dark"
-        PREFER_DARK="1"
-        if [ -f "$out/light.mode" ]; then
-          GTK_THEME="Adwaita"
-          PREFER_DARK="0"
-        fi
-
-        GTK_THEME=$(cat "$out/gtk.theme" 2>/dev/null || echo "$GTK_THEME")
-        ICON_THEME=$(cat "$out/icons.theme" 2>/dev/null || echo "Adwaita")
-
-        for version in 3.0 4.0; do
-          cat > "$out/settings-$version.ini" << EOF
-    [Settings]
-    gtk-theme-name=$GTK_THEME
-    gtk-application-prefer-dark-theme=$PREFER_DARK
-    gtk-icon-theme-name=$ICON_THEME
-    EOF
-        done
   ''
