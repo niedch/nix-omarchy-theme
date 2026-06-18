@@ -89,7 +89,7 @@
         If a theme ships its own file with the same name, the theme file takes precedence.
       '';
       example = {
-        "ghostty.conf" = ''
+        "ghostty.conf.tpl" = ''
           background = {{ background }}
           foreground = {{ foreground }}
           palette = 0={{ color0 }}

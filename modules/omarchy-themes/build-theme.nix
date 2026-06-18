@@ -23,10 +23,15 @@
     if hasColors
     then lib.mapAttrs (n: t: render.renderTemplate colors t) templates
     else {};
+  stripTpl = n: let
+    m = builtins.match "(.+)\.tpl" n;
+  in
+    if m != null then builtins.head m else n;
+
   renderedFiles =
     lib.mapAttrs' (
       n: content:
-        lib.nameValuePair n (pkgs.writeText "omarchy-${name}-${n}" content)
+        lib.nameValuePair (stripTpl n) (pkgs.writeText "omarchy-${name}-${n}" content)
     )
     rendered;
 in

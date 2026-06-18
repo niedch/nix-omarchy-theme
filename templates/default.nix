@@ -1,19 +1,19 @@
 {
-  "alacritty.toml" = builtins.readFile ./alacritty.toml;
-  "btop.theme" = builtins.readFile ./btop.theme;
-  "chromium.theme" = builtins.readFile ./chromium.theme;
-  "foot.ini" = builtins.readFile ./foot.ini;
-  "ghostty.conf" = builtins.readFile ./ghostty.conf;
-  "gum.env.conf" = builtins.readFile ./gum.env.conf;
-  "helix.toml" = builtins.readFile ./helix.toml;
-  "hyprland-preview-share-picker.css" = builtins.readFile ./hyprland-preview-share-picker.css;
-  "hyprland.conf" = builtins.readFile ./hyprland.conf;
-  "hyprlock.conf" = builtins.readFile ./hyprlock.conf;
-  "keyboard.rgb" = builtins.readFile ./keyboard.rgb;
-  "kitty.conf" = builtins.readFile ./kitty.conf;
-  "mako.ini" = builtins.readFile ./mako.ini;
-  "obsidian.css" = builtins.readFile ./obsidian.css;
-  "swayosd.css" = builtins.readFile ./swayosd.css;
-  "walker.css" = builtins.readFile ./walker.css;
-  "waybar.css" = builtins.readFile ./waybar.css;
+  "alacritty.toml.tpl" = builtins.readFile ./alacritty.toml.tpl;
+  "btop.theme.tpl" = builtins.readFile ./btop.theme.tpl;
+  "chromium.theme.tpl" = builtins.readFile ./chromium.theme.tpl;
+  "foot.ini.tpl" = builtins.readFile ./foot.ini.tpl;
+  "ghostty.conf.tpl" = builtins.readFile ./ghostty.conf.tpl;
+  "gum.env.conf.tpl" = builtins.readFile ./gum.env.conf.tpl;
+  "helix.toml.tpl" = builtins.readFile ./helix.toml.tpl;
+  "hyprland-preview-share-picker.css.tpl" = builtins.readFile ./hyprland-preview-share-picker.css.tpl;
+  "hyprland.conf.tpl" = builtins.readFile ./hyprland.conf.tpl;
+  "hyprlock.conf.tpl" = builtins.readFile ./hyprlock.conf.tpl;
+  "keyboard.rgb.tpl" = builtins.readFile ./keyboard.rgb.tpl;
+  "kitty.conf.tpl" = builtins.readFile ./kitty.conf.tpl;
+  "mako.ini.tpl" = builtins.readFile ./mako.ini.tpl;
+  "obsidian.css.tpl" = builtins.readFile ./obsidian.css.tpl;
+  "swayosd.css.tpl" = builtins.readFile ./swayosd.css.tpl;
+  "walker.css.tpl" = builtins.readFile ./walker.css.tpl;
+  "waybar.css.tpl" = builtins.readFile ./waybar.css.tpl;
 }
