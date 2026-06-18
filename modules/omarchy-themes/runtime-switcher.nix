@@ -67,7 +67,7 @@ in {
             executable = true;
           }
       )
-      afterHooks // cfg.afterHooks;
+      (afterHooks // cfg.afterHooks);
 
     home.packages = with pkgs; [
       dconf
