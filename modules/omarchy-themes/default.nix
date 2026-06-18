@@ -6,7 +6,7 @@
   render,
 }: {config, ...}: let
   cfg = config.omarchy-themes;
-  themesDir = "${config.home.homeDirectory}/.themes-src";
+  themesDir = "${config.home.homeDirectory}/.local/themes";
   currentLink = "${themesDir}/current";
   buildTheme = import ./build-theme.nix {inherit lib pkgs render;};
   inherit (import ./options.nix {inherit lib pkgs defaultTemplates;}) options;

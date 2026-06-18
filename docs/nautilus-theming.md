@@ -78,7 +78,7 @@ The `programs.nautilus.enable` option in NixOS pulls in Nautilus, gvfs, and trac
 ## Theming Pipeline
 
 ```
-Theme directory (e.g. ~/.themes-src/current/)
+Theme directory (e.g. ~/.local/themes/current/)
 ├── gtk.theme          → (optional) custom GTK theme name, e.g. "Adwaita"
 ├── light.mode         → (optional) if present, signals light mode → "Adwaita" + prefer-light
 │                        if absent,  defaults to     "Adwaita-dark" + prefer-dark
@@ -181,7 +181,7 @@ To scope rules to Nautilus only, use the `.nautilus-window` class (GTK4):
 The icon theme set via `dconf` affects Nautilus's file/folder icons. Set it in `icons.theme`:
 
 ```
-# ~/.themes-src/current/icons.theme
+# ~/.local/themes/current/icons.theme
 Yaru-prussiangreen
 ```
 
