@@ -42,8 +42,10 @@ in
         rm -rf "$out/.git" 2>/dev/null || true
 
         ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: filePath: ''
-        if [ ! -f "$out/${lib.escapeShellArg n}" ]; then
-          cp "${filePath}" "$out/${lib.escapeShellArg n}"
+        outFile="$out/${lib.escapeShellArg n}"
+        if [ ! -f "$outFile" ]; then
+          mkdir -p "$(dirname "$outFile")"
+          cp "${filePath}" "$outFile"
         fi
       '')
       renderedFiles)}
