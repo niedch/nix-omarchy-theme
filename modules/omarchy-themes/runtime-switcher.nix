@@ -2,6 +2,7 @@
   lib,
   pkgs,
   defaultTemplates,
+  defaultHooks,
   colors,
   render,
 }: {config, ...}: let
@@ -10,7 +11,7 @@
   currentLink = "${themesDir}/current";
   buildTheme = import ./build-theme.nix {inherit lib pkgs render;};
   scripts = import ./scripts.nix {inherit pkgs;};
-  inherit (import ./options.nix {inherit lib pkgs defaultTemplates;}) options;
+  inherit (import ./options.nix {inherit lib pkgs defaultTemplates defaultHooks;}) options;
 in {
   inherit options;
 
@@ -46,7 +47,7 @@ in {
     '';
 
     xdg.configFile =
-      lib.mapAttrs' (
+      (lib.mapAttrs' (
         target: symlink:
           lib.nameValuePair target {
             source =
@@ -55,7 +56,17 @@ in {
             recursive = symlink.recursive;
           }
       )
-      cfg.symlinks;
+      cfg.symlinks)
+      // lib.mapAttrs' (name: script:
+        lib.nameValuePair "theme-switcher/hooks/theme-set.d/${name}" {
+          text = ''
+            #!/bin/sh
+            set -euo pipefail
+            ${script}
+          '';
+          executable = true;
+        }
+      ) cfg.defaultHooks;
 
     home.packages = with pkgs; [
       dconf
@@ -84,21 +95,7 @@ in {
         ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
 
         ${scripts.applyGtkConfig}
-        ${scripts.applyChromiumColor}
         ${scripts.selectBackground {preserveCurrentBg = true;}}
-
-        hyprctl reload 2>/dev/null || true
-        pkill -USR2 ghostty 2>/dev/null || true
-        makoctl reload 2>/dev/null || true
-
-        if pgrep -f obsidian &>/dev/null; then
-          obsidian-cli eval "code=document.location.reload()" 2>/dev/null || true
-        fi
-
-        systemctl --user restart elephant.service walker.service swaybg.service waybar.service 2>/dev/null || true
-
-        pkill -SIGUSR2 btop 2>/dev/null || true
-        pkill -USR2 opencode 2>/dev/null || true
 
         HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
         if [ -d "$HOOK_DIR" ]; then
@@ -109,8 +106,6 @@ in {
         if [ -x "$HOME/.config/theme-switcher/hooks/theme-set" ]; then
           "$HOME/.config/theme-switcher/hooks/theme-set" "$THEME"
         fi
-
-        notify-send "Theme Switched" "$THEME" -i preferences-desktop-theme
       '')
       (writeShellScriptBin "theme-wallpaper" ''
         set -euo pipefail

@@ -2,6 +2,7 @@
   lib,
   pkgs,
   defaultTemplates,
+  defaultHooks,
 }: {
   options.omarchy-themes = {
     enable = lib.mkEnableOption "multi-theme manager with live switching";
@@ -94,6 +95,16 @@
           palette = 0={{ color0 }}
         '';
       };
+    };
+
+    defaultHooks = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = defaultHooks;
+      defaultText = lib.literalMD "Built-in reload + notify hooks";
+      description = ''
+        Hook scripts installed to theme-set.d/. Keys determine ordering (sorted alphabetically).
+        Each hook receives the theme name as $1.
+      '';
     };
 
     symlinks = lib.mkOption {
