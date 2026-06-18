@@ -75,7 +75,7 @@ in
           PREFER_DARK="0"
         fi
 
-        GTK_THEME=$(cat "$out/gtk.theme" 2>/dev/null || echo "Yaru-blue")
+        GTK_THEME=$(cat "$out/gtk.theme" 2>/dev/null || echo "$GTK_THEME")
         ICON_THEME=$(cat "$out/icons.theme" 2>/dev/null || echo "Adwaita")
 
         for version in 3.0 4.0; do
