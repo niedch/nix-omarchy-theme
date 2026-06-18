@@ -32,11 +32,8 @@
 in
   pkgs.runCommandLocal "omarchy-theme-${name}" {} ''
     mkdir -p "$out"
-
     cp -r ${themeRoot}/* "$out/"
-
     chmod -R u+w "$out"
-
     rm -rf "$out/.git" 2>/dev/null || true
 
     ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: filePath: ''
@@ -62,19 +59,13 @@ in
     '') (theme.extraBackgrounds or []))}
 
     GTK_THEME="Adwaita-dark"
+    PREFER_DARK="1"
     if [ -f "$out/light.mode" ]; then
       GTK_THEME="Adwaita"
-    fi
-    if [ -f "$out/gtk.theme" ]; then
-      GTK_THEME=$(cat "$out/gtk.theme")
-    fi
-
-    if [ -f "$out/light.mode" ]; then
       PREFER_DARK="0"
-    else
-      PREFER_DARK="1"
     fi
 
+    GTK_THEME=$(cat "$out/gtk.theme" 2>/dev/null || echo "Yaru-blue")
     ICON_THEME=$(cat "$out/icons.theme" 2>/dev/null || echo "Adwaita")
 
     for version in 3.0 4.0; do
