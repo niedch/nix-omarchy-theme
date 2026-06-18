@@ -2,7 +2,7 @@
   lib,
   pkgs,
   defaultTemplates,
-  defaultHooks,
+  afterHooks,
   colors,
   render,
 }: {config, ...}: let
@@ -11,7 +11,7 @@
   currentLink = "${themesDir}/current";
   buildTheme = import ./build-theme.nix {inherit lib pkgs render;};
   scripts = import ./scripts.nix {inherit pkgs;};
-  inherit (import ./options.nix {inherit lib pkgs defaultTemplates defaultHooks;}) options;
+  inherit (import ./options.nix {inherit lib pkgs defaultTemplates afterHooks;}) options;
 in {
   inherit options;
 
@@ -41,7 +41,6 @@ in {
         ${scripts.exportGsettingsSchemas}
         ${scripts.applyGtkConfig}
         ${scripts.applyChromiumColor}
-
         :
       fi
     '';
@@ -66,7 +65,7 @@ in {
           '';
           executable = true;
         }
-      ) cfg.defaultHooks;
+      ) cfg.afterHooks;
 
     home.packages = with pkgs; [
       dconf

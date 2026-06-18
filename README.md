@@ -157,10 +157,35 @@ Lists wallpapers from the current theme's `backgrounds/` directory and sets the 
 
 ## Custom hooks
 
+Hooks run after a theme has been switched. Within a hook, `$1` gives you the selected theme name.
+
+### Via Nix (`afterHooks`)
+
+The built-in hooks are defined as defaults but can be overridden or extended using the `afterHooks` option:
+
+```nix
+{
+  omarchy-themes.afterHooks = {
+    # Override a built-in hook
+    "0_reload_defaults" = ''
+      hyprctl reload 2>/dev/null || true
+    '';
+    # Add your own hooks — prefix with a number to control ordering, use $1 for the theme name
+    "50_restart_polybar" = ''
+      polybar "$1" &
+    '';
+  };
+}
+```
+
+Set `afterHooks = {}` to disable all built-in hooks entirely.
+
+### Manual
+
 Place executable scripts in:
 
-- `~/.config/theme-switcher/hooks/theme-set.d/` — all scripts run with the theme name as argument
-- `~/.config/theme-switcher/hooks/theme-set` — single script run with the theme name
+- `~/.config/theme-switcher/hooks/theme-set.d/` — each script runs with the theme name as `$1`, sorted alphabetically; use `$1` inside your script to access it
+- `~/.config/theme-switcher/hooks/theme-set` — runs after all scripts in `theme-set.d/`
 
 ## Built-in templates
 
@@ -233,6 +258,8 @@ home.file."path/to/your-vault/.obsidian/snippets/obsidian.css" = {
 ```
 
 Then enable the snippet in Obsidian's **Settings → Appearance → CSS snippets**.
+
+If you also want **live reload** when switching themes (via `theme-switcher`), enable the built-in CLI in Obsidian (**Settings → General → Command line interface**) and follow the prompt to register it. The built-in `0_reload_defaults` hook will then send a reload command to Obsidian on every theme switch. You can disable or override this via the `afterHooks` option.
 </details>
 
 <details>

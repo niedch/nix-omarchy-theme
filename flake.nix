@@ -11,7 +11,7 @@
     lib = nixpkgs.lib;
     omarchyLib = import ./lib {inherit lib;};
     defaultTemplates = import ./templates;
-    defaultHooks = import ./modules/omarchy-themes/hooks;
+    afterHooks = import ./modules/omarchy-themes/hooks;
     forAllSystems = f: lib.genAttrs ["x86_64-linux" "aarch64-linux"] (system: f nixpkgs.legacyPackages.${system});
   in {
     homeManagerModules.default = {
@@ -21,7 +21,7 @@
       ...
     }:
       import ./modules/omarchy-themes {
-        inherit lib pkgs defaultTemplates defaultHooks;
+        inherit lib pkgs defaultTemplates afterHooks;
         inherit (omarchyLib) colors render;
       } {inherit config;};
 

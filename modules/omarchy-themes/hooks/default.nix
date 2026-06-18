@@ -4,9 +4,7 @@
     pkill -USR2 ghostty 2>/dev/null || true
     makoctl reload 2>/dev/null || true
 
-    if pgrep -f obsidian &>/dev/null; then
-      obsidian-cli eval "code=document.location.reload()" 2>/dev/null || true
-    fi
+    obsidian-cli eval "code=document.location.reload()" 2>/dev/null || true
 
     systemctl --user restart elephant.service walker.service swaybg.service waybar.service 2>/dev/null || true
 
