@@ -46,7 +46,7 @@
   rendered = lib.mapAttrs (n: t: render.renderTemplate renderContext t) (
     if hasColors
     then templates
-    else lib.filterAttrs (n: _: lib.hasPrefix "settings-" n) templates
+    else lib.filterAttrs (n: _: lib.hasPrefix "settings-" n || n == "gtk.theme.tpl" || n == "icons.theme.tpl") templates
   );
   stripTpl = n: let
     m = builtins.match "(.+)\.tpl" n;

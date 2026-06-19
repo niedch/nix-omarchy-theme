@@ -1,25 +1,4 @@
-{pkgs}: let
-  gsettings = "${pkgs.glib.bin}/bin/gsettings";
-  schemasDir = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/gsettings-desktop-schemas-${pkgs.gsettings-desktop-schemas.version}/glib-2.0/schemas";
-in {
-  applyGtkConfig = ''
-    if [ -f "$CURRENT/gtk.theme" ]; then
-      GTK_THEME=$(cat "$CURRENT/gtk.theme")
-    elif [ -f "$CURRENT/light.mode" ]; then
-      GTK_THEME="Adwaita"
-    else
-      GTK_THEME="Adwaita-dark"
-    fi
-    ${gsettings} set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
-    ${gsettings} set org.gnome.desktop.interface color-scheme \
-      "$([ -f "$CURRENT/light.mode" ] && echo "prefer-light" || echo "prefer-dark")" 2>/dev/null || true
-    ICON_THEME=$(cat "$CURRENT/icons.theme" 2>/dev/null || echo "Adwaita")
-    ${gsettings} set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
-    mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
-    ln -sfn "$CURRENT/settings-3.0.ini" "$HOME/.config/gtk-3.0/settings.ini"
-    ln -sfn "$CURRENT/settings-4.0.ini" "$HOME/.config/gtk-4.0/settings.ini"
-  '';
-
+{pkgs}: {
   applyChromiumColor = ''
         THEME_HEX="#1c2027"
         if [ -f "$CURRENT/light.mode" ]; then
@@ -77,7 +56,4 @@ in {
     fi
   '';
 
-  exportGsettingsSchemas = ''
-    export GSETTINGS_SCHEMA_DIR="${schemasDir}"
-  '';
 }

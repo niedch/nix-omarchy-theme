@@ -38,10 +38,16 @@ in {
 
         ${scripts.selectBackground {preserveCurrentBg = false;}}
 
-        ${scripts.exportGsettingsSchemas}
-        ${scripts.applyGtkConfig}
         ${scripts.applyChromiumColor}
         :
+      fi
+
+      export CURRENT="$CURRENT"
+      HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
+      if [ -d "$HOOK_DIR" ]; then
+        for hook in "$HOOK_DIR"/*; do
+          [ -x "$hook" ] && "$hook" "${cfg.defaultTheme}"
+        done
       fi
     '';
 
@@ -80,7 +86,6 @@ in {
       (writeShellScriptBin "theme-switcher" ''
         set -euo pipefail
 
-        ${scripts.exportGsettingsSchemas}
         export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
 
         THEMES_DIR="${themesDir}"
@@ -95,10 +100,10 @@ in {
 
         ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
 
-        ${scripts.applyGtkConfig}
         ${scripts.applyChromiumColor}
         ${scripts.selectBackground {preserveCurrentBg = true;}}
 
+        export CURRENT="$CURRENT"
         HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
         if [ -d "$HOOK_DIR" ]; then
           for hook in "$HOOK_DIR"/*; do
