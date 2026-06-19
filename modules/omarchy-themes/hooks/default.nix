@@ -20,6 +20,7 @@
 
     pkill -SIGUSR2 btop 2>/dev/null || true
     pkill -USR2 opencode 2>/dev/null || true
+    pkill -SIGUSR1 nvim 2>/dev/null || true
   '';
   "90_restart_nautilus" = ''
     nautilus -q 2>/dev/null || true
