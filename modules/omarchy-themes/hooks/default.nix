@@ -10,7 +10,7 @@
   '';
 
   "0_reload_defaults" = ''
-    hyprctl reload 2>/dev/null || true
+    [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ] && hyprctl reload >/dev/null 2>&1 || true
     pkill -USR2 ghostty 2>/dev/null || true
     makoctl reload 2>/dev/null || true
 
