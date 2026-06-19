@@ -42,6 +42,7 @@ in {
         :
       fi
 
+      export PATH="''${PATH:+$PATH:}$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/run/current-system/sw/bin"
       export CURRENT="$CURRENT"
       HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
       if [ -d "$HOOK_DIR" ]; then
@@ -87,6 +88,7 @@ in {
         set -euo pipefail
 
         export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
+        export PATH="''${PATH:+$PATH:}$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/run/current-system/sw/bin"
 
         THEMES_DIR="${themesDir}"
         CURRENT="${currentLink}"
