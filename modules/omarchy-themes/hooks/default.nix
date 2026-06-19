@@ -21,6 +21,9 @@
     pkill -SIGUSR2 btop 2>/dev/null || true
     pkill -USR2 opencode 2>/dev/null || true
     pkill -SIGUSR1 nvim 2>/dev/null || true
+    find /tmp -type s \( -name '0' -path '*/nvim*' -o -name '*nvim*' \) 2>/dev/null | while read -r server; do
+      nvim --server "$server" --remote-send '<C-\><C-N>:source $MYVIMRC<CR>' 2>/dev/null || true
+    done
   '';
   "90_restart_nautilus" = ''
     nautilus -q 2>/dev/null || true
