@@ -1,5 +1,5 @@
 {
-  "10_apply_gtk" = ''
+  "05_apply_gtk" = ''
     CURRENT="''${CURRENT:-$HOME/.local/share/themes/current}"
     GTK_THEME=$(cat "$CURRENT/gtk.theme")
     ICON_THEME=$(cat "$CURRENT/icons.theme")
@@ -24,7 +24,7 @@
   "90_restart_nautilus" = ''
     nautilus -q 2>/dev/null || true
   '';
-  "100_notify" = ''
+  "95_notify" = ''
     notify-send "Theme Switched" "$1" -i preferences-desktop-theme 2>/dev/null || true
   '';
 }
