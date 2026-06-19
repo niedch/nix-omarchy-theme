@@ -25,6 +25,6 @@
     nautilus -q 2>/dev/null || true
   '';
   "100_notify" = ''
-    notify-send "Theme Switched" "$1" -i preferences-desktop-theme
+    notify-send "Theme Switched" "$1" -i preferences-desktop-theme 2>/dev/null || true
   '';
 }
