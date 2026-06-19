@@ -12,6 +12,7 @@
   buildTheme = import ./build-theme.nix {inherit lib pkgs render;};
   scripts = import ./scripts.nix {inherit pkgs;};
   inherit (import ./options.nix {inherit lib pkgs defaultTemplates afterHooks;}) options;
+  schemasDir = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/gsettings-desktop-schemas-${pkgs.gsettings-desktop-schemas.version}/glib-2.0/schemas";
 in {
   inherit options;
 
@@ -43,6 +44,7 @@ in {
       fi
 
       export PATH="''${PATH:+$PATH:}$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/run/current-system/sw/bin"
+      export GSETTINGS_SCHEMA_DIR="${schemasDir}"
       export CURRENT="$CURRENT"
       HOOK_DIR="$HOME/.config/theme-switcher/hooks/theme-set.d"
       if [ -d "$HOOK_DIR" ]; then
@@ -89,6 +91,7 @@ in {
 
         export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
         export PATH="''${PATH:+$PATH:}$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/run/current-system/sw/bin"
+        export GSETTINGS_SCHEMA_DIR="${schemasDir}"
 
         THEMES_DIR="${themesDir}"
         CURRENT="${currentLink}"
