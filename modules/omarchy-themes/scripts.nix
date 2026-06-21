@@ -1,4 +1,31 @@
 {pkgs}: {
+  applyChromiumColor = ''
+        THEME_HEX="#1c2027"
+        if [ -f "$CURRENT/light.mode" ]; then
+          THEME_HEX="#eff1f5"
+        fi
+        if [ -f "$CURRENT/chromium.theme" ]; then
+          CHROMIUM_RGB=$(cat "$CURRENT/chromium.theme")
+          THEME_HEX=$(printf '#%02x%02x%02x' $(echo "$CHROMIUM_RGB" | tr ',' ' ') 2>/dev/null || echo "$THEME_HEX")
+        fi
+        for policy_dir in \
+          "$HOME/.config/brave/Policies/managed" \
+          "$HOME/.config/brave/policies/managed" \
+          "$HOME/.config/chromium/Policies/managed" \
+          "$HOME/.config/chromium/policies/managed" \
+          "$HOME/.config/google-chrome/Policies/managed" \
+          "$HOME/.config/google-chrome/policies/managed" \
+          "$HOME/.config/microsoft-edge/Policies/managed" \
+          "$HOME/.config/microsoft-edge/policies/managed" \
+          "$HOME/.config/BraveSoftware/Brave-Browser/Policies/managed" \
+          "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed"; do
+          mkdir -p "$policy_dir"
+          cat > "$policy_dir/color.json" << EOF
+    {"BrowserThemeColor": "$THEME_HEX"}
+    EOF
+        done
+  '';
+
   selectBackground = {preserveCurrentBg ? false}: let
     linkSnippet =
       if preserveCurrentBg

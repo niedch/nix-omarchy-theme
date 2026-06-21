@@ -38,6 +38,9 @@ in {
         ln -sfn "$THEMES_DIR/${cfg.defaultTheme}" "$CURRENT"
 
         ${scripts.selectBackground {preserveCurrentBg = false;}}
+
+        ${scripts.applyChromiumColor}
+        :
       fi
 
       export PATH="''${PATH:+$PATH:}$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/run/current-system/sw/bin"
@@ -102,6 +105,7 @@ in {
 
         ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
 
+        ${scripts.applyChromiumColor}
         ${scripts.selectBackground {preserveCurrentBg = true;}}
 
         export CURRENT="$CURRENT"
