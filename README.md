@@ -63,6 +63,10 @@ Enable the module and define your themes:
       hypr = {};
       waybar = {};
       wallpapers = { source = "wallpapers"; };
+
+      # Chromium browser policy for dynamic theme color
+      "chromium/Policies/managed/color.json" = { source = "chromium-policy.json"; recursive = false; };
+      "chromium/policies/managed/color.json" = { source = "chromium-policy.json"; recursive = false; };
     };
   };
 }
@@ -193,7 +197,7 @@ Place executable scripts in:
 |---|---|
 | `alacritty.toml` | Alacritty terminal |
 | `btop.theme` | Btop system monitor |
-| `chromium.theme` | Chromium browser |
+| `chromium-policy.json` | Chromium browser theme policy |
 | `foot.ini` | Foot terminal |
 | `ghostty.conf` | Ghostty terminal |
 | `gum.env.conf` | Charm Gum TUI |

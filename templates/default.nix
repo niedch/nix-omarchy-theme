@@ -1,7 +1,7 @@
 {
   "alacritty.toml.tpl" = builtins.readFile ./alacritty.toml.tpl;
   "btop.theme.tpl" = builtins.readFile ./btop.theme.tpl;
-  "chromium.theme.tpl" = builtins.readFile ./chromium.theme.tpl;
+  "chromium-policy.json.tpl" = builtins.readFile ./chromium-policy.json.tpl;
   "foot.ini.tpl" = builtins.readFile ./foot.ini.tpl;
   "gtk.theme.tpl" = builtins.readFile ./gtk.theme.tpl;
   "icons.theme.tpl" = builtins.readFile ./icons.theme.tpl;
