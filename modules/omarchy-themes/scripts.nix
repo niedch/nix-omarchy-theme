@@ -1,13 +1,6 @@
 {pkgs}: {
   applyChromiumColor = ''
-        THEME_HEX="#1c2027"
-        if [ -f "$CURRENT/light.mode" ]; then
-          THEME_HEX="#eff1f5"
-        fi
-        if [ -f "$CURRENT/chromium.theme" ]; then
-          CHROMIUM_RGB=$(cat "$CURRENT/chromium.theme")
-          THEME_HEX=$(printf '#%02x%02x%02x' $(echo "$CHROMIUM_RGB" | tr ',' ' ') 2>/dev/null || echo "$THEME_HEX")
-        fi
+      if [ -f "$CURRENT/chromium-color.json" ]; then
         for policy_dir in \
           "$HOME/.config/brave/Policies/managed" \
           "$HOME/.config/brave/policies/managed" \
@@ -20,10 +13,9 @@
           "$HOME/.config/BraveSoftware/Brave-Browser/Policies/managed" \
           "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed"; do
           mkdir -p "$policy_dir"
-          cat > "$policy_dir/color.json" << EOF
-    {"BrowserThemeColor": "$THEME_HEX"}
-    EOF
+          cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
         done
+      fi
   '';
 
   selectBackground = {preserveCurrentBg ? false}: let

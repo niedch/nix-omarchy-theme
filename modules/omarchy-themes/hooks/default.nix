@@ -1,5 +1,5 @@
 {
-  "05_apply_gtk" = ''
+  "01_apply_gtk" = ''
     CURRENT="''${CURRENT:-$HOME/.local/share/themes/current}"
     GTK_THEME=$(cat "$CURRENT/gtk.theme")
     ICON_THEME=$(cat "$CURRENT/icons.theme")
@@ -9,7 +9,7 @@
     gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
   '';
 
-  "0_reload_defaults" = ''
+  "02_reload_defaults" = ''
     [ -n "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && hyprctl reload >/dev/null 2>&1 || true
     pkill -USR2 ghostty 2>/dev/null || true
     makoctl reload 2>/dev/null || true
