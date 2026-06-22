@@ -10,14 +10,14 @@
   '';
   "02_apply_chromium_color" = ''
     CURRENT="''${CURRENT:-$HOME/.local/share/themes/current}"
-    [ ! -f "$CURRENT/chromium-color.json" ] && return
-
-    for policy_dir in \
-      "$HOME/.config/chromium/Policies/managed" \
-      "$HOME/.config/chromium/policies/managed"; do
-      mkdir -p "$policy_dir"
-      cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
-    done
+    if [ -f "$CURRENT/chromium-color.json" ]; then
+      for policy_dir in \
+        "$HOME/.config/chromium/Policies/managed" \
+        "$HOME/.config/chromium/policies/managed"; do
+          mkdir -p "$policy_dir"
+          cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
+      done
+    fi
   '';
   "03_reload_defaults" = ''
     [ -n "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && hyprctl reload >/dev/null 2>&1 || true
