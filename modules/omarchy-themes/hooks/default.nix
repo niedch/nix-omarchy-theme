@@ -10,28 +10,27 @@
   '';
   "02_apply_chromium_color" = ''
     CURRENT="''${CURRENT:-$HOME/.local/share/themes/current}"
-    if [ -f "$CURRENT/chromium-color.json" ]; then
-      for policy_dir in \
-        "$HOME/.config/chromium/Policies/managed" \
-        "$HOME/.config/chromium/policies/managed"; do
-        mkdir -p "$policy_dir"
-        cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
-      done
-      fi
+    [ ! -f "$CURRENT/chromium-color.json" ] && return
+
+    for policy_dir in \
+      "$HOME/.config/chromium/Policies/managed" \
+      "$HOME/.config/chromium/policies/managed"; do
+      mkdir -p "$policy_dir"
+      cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
+    done
   '';
   "03_reload_defaults" = ''
     [ -n "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && hyprctl reload >/dev/null 2>&1 || true
-    pkill -USR2 ghostty 2>/dev/null || true
-    makoctl reload 2>/dev/null || true
 
+    makoctl reload 2>/dev/null || true
     obsidian-cli eval "code=document.location.reload()" 2>/dev/null || true
 
     systemctl --user restart elephant.service walker.service swaybg.service waybar.service 2>/dev/null || true
 
+    pkill -USR2 ghostty 2>/dev/null || true
     pkill -SIGUSR2 btop 2>/dev/null || true
     pkill -USR2 opencode 2>/dev/null || true
     pkill -SIGUSR1 nvim 2>/dev/null || true
-    find /tmp -type s \( -name '0' -path '*/nvim*' -o -name '*nvim*' \) 2>/dev/null -exec nvim --server {} --remote-send '<C-\><C-N>:source $MYVIMRC<CR>' \; 2>/dev/null || true
   '';
   "90_restart_nautilus" = ''
     nautilus -q 2>/dev/null || true
