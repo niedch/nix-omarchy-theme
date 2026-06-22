@@ -302,6 +302,44 @@ Reference files from a working setup:
 
 </details>
 
+<details>
+<summary><b>Chromium & Chrome-based browsers</b> — apply theme color via a policy hook</summary>
+
+The module renders a `chromium-color.json` (`{"BrowserThemeColor": "{{ background }}"}`) into `~/.local/share/themes/current/`. The `BrowserThemeColor` managed policy sets the browser's toolbar/chrome accent color.
+
+Chrome-based browsers only re-read policies when the policy file's **content** changes on disk — a symlink swap (relinking `current/` on theme switch) doesn't produce a content-change event, so the new color is never picked up. The built-in `02_apply_chromium_color` hook solves this by **copying** the json into the managed-policy directory on every switch, which the browser detects as a real change.
+
+The built-in hook covers plain Chromium. To extend it to additional browsers, override the hook via `afterHooks`:
+
+```nix
+omarchy-themes.afterHooks."02_apply_chromium_color" = ''
+  CURRENT="''${CURRENT:-$HOME/.local/share/themes/current}"
+  for policy_dir in \
+    "$HOME/.config/chromium/policies/managed" \
+    "$HOME/.config/google-chrome/policies/managed" \
+    "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed" \
+    "$HOME/.config/microsoft-edge/policies/managed" \
+    "$HOME/.config/vivaldi/policies/managed"; do
+    mkdir -p "$policy_dir"
+    cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
+  done
+'';
+```
+
+Common Linux policy directories:
+
+| Browser | Policy directory |
+|---|---|
+| Chromium | `~/.config/chromium/policies/managed/` |
+| Google Chrome | `~/.config/google-chrome/policies/managed/` |
+| Brave | `~/.config/BraveSoftware/Brave-Browser/policies/managed/` |
+| Microsoft Edge | `~/.config/microsoft-edge/policies/managed/` |
+| Vivaldi | `~/.config/vivaldi/policies/managed/` |
+
+The new color takes effect on next browser launch.
+
+</details>
+
 ## Development
 
 ```sh
