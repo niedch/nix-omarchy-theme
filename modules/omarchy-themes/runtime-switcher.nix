@@ -39,7 +39,6 @@ in {
 
         ${scripts.selectBackground {preserveCurrentBg = false;}}
 
-        ${scripts.applyChromiumColor}
         :
       fi
 
@@ -105,7 +104,6 @@ in {
 
         ln -sfn "$THEMES_DIR/$THEME" "$CURRENT"
 
-        ${scripts.applyChromiumColor}
         ${scripts.selectBackground {preserveCurrentBg = true;}}
 
         export CURRENT="$CURRENT"

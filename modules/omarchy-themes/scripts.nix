@@ -1,23 +1,4 @@
 {pkgs}: {
-  applyChromiumColor = ''
-      if [ -f "$CURRENT/chromium-color.json" ]; then
-        for policy_dir in \
-          "$HOME/.config/brave/Policies/managed" \
-          "$HOME/.config/brave/policies/managed" \
-          "$HOME/.config/chromium/Policies/managed" \
-          "$HOME/.config/chromium/policies/managed" \
-          "$HOME/.config/google-chrome/Policies/managed" \
-          "$HOME/.config/google-chrome/policies/managed" \
-          "$HOME/.config/microsoft-edge/Policies/managed" \
-          "$HOME/.config/microsoft-edge/policies/managed" \
-          "$HOME/.config/BraveSoftware/Brave-Browser/Policies/managed" \
-          "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed"; do
-          mkdir -p "$policy_dir"
-          cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
-        done
-      fi
-  '';
-
   selectBackground = {preserveCurrentBg ? false}: let
     linkSnippet =
       if preserveCurrentBg
