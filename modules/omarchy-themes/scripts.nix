@@ -28,5 +28,4 @@
       ${linkSnippet}
     fi
   '';
-
 }
