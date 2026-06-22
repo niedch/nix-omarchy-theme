@@ -278,6 +278,30 @@ systemd.user.services.swaybg = {
 The `current-background` symlink is updated automatically whenever a theme is switched.
 </details>
 
+<details>
+<summary><b>Walker</b> — load theme colors via <code>style.css</code></summary>
+
+Symlink the rendered `walker.css` into Walker's theme directory, then write a `style.css` that imports it so the theme's color variables (`@text`, `@base`, `@border`, …) are available to your custom rules:
+
+```nix
+omarchy-themes.symlinks."walker/themes/default/walker.css".source = "walker.css";
+```
+
+`style.css` (placed at `~/.config/walker/themes/default/style.css`) begins with:
+
+```css
+@import "./walker.css";
+```
+
+and is selected in `config.toml` via `theme = "default"`. The accompanying `layout.xml` defines the GTK widget structure (window, search box, list, preview).
+
+Reference files from a working setup:
+
+- [style.css](https://github.com/niedch/nixos-dotfiles/blob/master/home/walker/style.css)
+- [layout.xml](https://github.com/niedch/nixos-dotfiles/blob/master/home/walker/layout.xml)
+
+</details>
+
 ## Development
 
 ```sh
