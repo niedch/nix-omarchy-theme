@@ -47,26 +47,49 @@ Enable the module and define your themes:
 {
   omarchy-themes = {
     enable = true;
-    defaultTheme = "catppuccin";
+    defaultTheme = "kanso";
 
-    themes.catppuccin = {
-      url = "https://github.com/omarchis/catppuccin-omarchy";
-      ref = "main";
-      hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-      subpath = ".";
+    selectorCommand = "walker --dmenu";
+
+    themes = {
+      catppuccin = {
+        url = "https://github.com/basecamp/omarchy.git";
+        ref = "9cf1852525a5f7de26d3162db9d61e2f5c1d5523";
+        hash = "sha256-9zkIEgD/L5+eK5fuQNXbBd5XXO+NwH6QWGiDI//kGas=";
+        subpath = "themes/catppuccin";
+      };
+
+      gruvbox = {
+        url = "https://github.com/basecamp/omarchy.git";
+        ref = "9cf1852525a5f7de26d3162db9d61e2f5c1d5523";
+        hash = "sha256-9zkIEgD/L5+eK5fuQNXbBd5XXO+NwH6QWGiDI//kGas=";
+        subpath = "themes/gruvbox";
+        defaultBackground = "6-houses.png";
+        extraBackgrounds = [{
+          url = "https://w.wallhaven.cc/full/9m/wallhaven-9mj8yw.png";
+          hash = "sha256-m+CJrkoRp48ZY8LHBWBN7MnxWReLKxkKweKWdOvg1Fg=";
+          filename = "6-houses.png";
+        }];
+      };
+
+      kanso = {
+        url = "https://github.com/HANCORE-linux/omarchy-kanso-theme.git";
+        ref = "bc405d36b93e0abff39c22eda14d1f33121319f3";
+        hash = "sha256-AfwCqhF7WMtavS+Z1YTO1YU3XsfGiwDyGhjhzYyvsfY=";
+        defaultBackground = "BG_Painting.jpg";
+      };
     };
 
-    themes.gruvbox = {
-      url = "https://github.com/omarchis/gruvbox-omarchy";
-      ref = "main";
-      hash = "sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=";
-    };
-
-    # Symlink theme subdirectories into ~/.config/
+    # Symlink individual rendered files into ~/.config/
     symlinks = {
-      hypr = {};
-      waybar = {};
-      wallpapers = { source = "wallpapers"; };
+      "hypr/theme.lua".source = "hyprland.lua";
+      "hypr/hyprlock-theme.conf".source = "hyprlock.conf";
+      "waybar/colors.css".source = "waybar.css";
+      "walker/themes/default/walker.css".source = "walker.css";
+      "mako/config".source = "mako.ini";
+      "btop/themes/btop.theme".source = "btop.theme";
+      "gtk-3.0/settings.ini" = { source = "settings-3.0.ini"; recursive = false; };
+      "gtk-4.0/settings.ini" = { source = "settings-4.0.ini"; recursive = false; };
     };
   };
 }
@@ -74,11 +97,11 @@ Enable the module and define your themes:
 
 ### Theme selector
 
-By default themes are selected with `wofi`. Set a different command:
+By default themes are selected with `wofi`. Set a different command, e.g. `walker --dmenu` or `fzf`:
 
 ```nix
 {
-  omarchy-themes.selectorCommand = "${pkgs.fzf}/bin/fzf --prompt=\"Select Theme \"";
+  omarchy-themes.selectorCommand = "walker --dmenu";
 }
 ```
 
