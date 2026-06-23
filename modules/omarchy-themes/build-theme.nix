@@ -7,9 +7,13 @@
   theme,
   templates,
 }: let
+  isSha = s: builtins.match "[0-9a-f]{40}" s != null;
   themeSrc = builtins.fetchGit (
-    { url = theme.url; ref = theme.ref; }
-    // lib.optionalAttrs (theme ? rev && theme.rev != null) { rev = theme.rev; }
+    if theme.rev != null
+    then { url = theme.url; rev = theme.rev; }
+    else if isSha theme.ref
+    then { url = theme.url; rev = theme.ref; }
+    else { url = theme.url; ref = theme.ref; }
   );
   themeRoot = "${themeSrc}/${theme.subpath}";
   colorsFile = "${themeRoot}/colors.toml";

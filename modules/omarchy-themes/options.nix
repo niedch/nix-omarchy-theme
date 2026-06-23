@@ -32,17 +32,15 @@
           ref = lib.mkOption {
             type = lib.types.str;
             default = "main";
-            description = "Branch name, tag, or commit SHA";
+            description = ''
+              Branch name or tag. Only works with `--impure` on flakes.
+              For pure eval mode, use `rev` with a commit SHA instead.
+            '';
           };
           rev = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            description = "Optional commit SHA to pin the theme revision.";
-          };
-          hash = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "Deprecated — no longer used (builtins.fetchGit ignores it). Kept for backward compatibility.";
+            description = "Commit SHA to pin the theme revision (pure eval). Preferred over `ref`.";
           };
           subpath = lib.mkOption {
             type = lib.types.str;
