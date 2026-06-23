@@ -4,6 +4,10 @@ Declarative multi-theme manager for NixOS + Hyprland, built as a Home Manager mo
 
 Define color themes from Git repositories, render 17 application templates, switch themes at runtime, and have your entire desktop follow — terminals, bars, editors, notifications, lockscreens, and more.
 
+## Demo
+
+<video src="./assets/theme-switcher.mp4" controls width="100%"></video>
+
 ## Features
 
 - **Multi-theme management** — define any number of themes from Git repos containing a `colors.toml`
