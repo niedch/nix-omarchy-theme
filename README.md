@@ -6,7 +6,7 @@ Define color themes from Git repositories, render 17 application templates, swit
 
 ## Demo
 
-https://github.com/user-attachments/assets/a27b06e0-ee51-4768-9071-6b37bc1d6dff
+https://github.com/user-attachments/assets/f80ac36d-e856-40b3-8b5f-783c4a445cc9
 
 ## Features
 
