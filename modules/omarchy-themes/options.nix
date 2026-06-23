@@ -42,6 +42,10 @@
             default = null;
             description = "Commit SHA to pin the theme revision (pure eval). Preferred over `ref`.";
           };
+          hash = lib.mkOption {
+            type = lib.types.str;
+            description = "SRI hash of the fetched source (e.g. sha256-...)";
+          };
           subpath = lib.mkOption {
             type = lib.types.str;
             default = ".";
