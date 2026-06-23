@@ -153,7 +153,7 @@ color15 = "#bac2de"
 Optional files in the theme repo:
 
 | File | Purpose |
-|---|---|---|
+|------|---------|
 | `light.mode` | Empty marker file — treat as light theme; sets GTK theme to `Adwaita` + `prefer-light` |
 | `gtk.theme` | Override the GTK theme name (e.g. `"Tokyo-Night"`); takes highest priority over `light.mode` |
 | `icons.theme` | Icon theme name (e.g. `"Yaru-prussiangreen"`); feeds into GTK's `icon-theme` setting |
