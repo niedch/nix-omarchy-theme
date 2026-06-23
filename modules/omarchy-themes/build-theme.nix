@@ -7,11 +7,10 @@
   theme,
   templates,
 }: let
-  themeSrc = pkgs.fetchgit {
-    url = theme.url;
-    rev = theme.ref;
-    hash = theme.hash;
-  };
+  themeSrc = builtins.fetchGit (
+    { url = theme.url; ref = theme.ref; }
+    // lib.optionalAttrs (theme ? rev && theme.rev != null) { rev = theme.rev; }
+  );
   themeRoot = "${themeSrc}/${theme.subpath}";
   colorsFile = "${themeRoot}/colors.toml";
   hasColors = builtins.pathExists colorsFile;
@@ -35,15 +34,15 @@
     prefer_dark = preferDark;
     gtk_theme =
       if builtins.pathExists gtkThemeFile
-      then lib.strings.removeSuffix "\n" (builtins.readFile gtkThemeFile)
+      then lib.strings.trim (builtins.readFile gtkThemeFile)
       else defaultGtkTheme;
     icon_theme =
       if builtins.pathExists iconsThemeFile
-      then lib.strings.removeSuffix "\n" (builtins.readFile iconsThemeFile)
+      then lib.strings.trim (builtins.readFile iconsThemeFile)
       else "Adwaita";
   };
   renderContext = colors // gtkMetadata;
-  rendered = lib.mapAttrs (n: t: render.renderTemplate renderContext t) (
+  rendered = lib.mapAttrs (_: t: render.renderTemplate renderContext t) (
     if hasColors
     then templates
     else lib.filterAttrs (n: _: lib.hasPrefix "settings-" n || n == "gtk.theme.tpl" || n == "icons.theme.tpl") templates
@@ -58,7 +57,7 @@
   renderedFiles =
     lib.mapAttrs' (
       n: content:
-        lib.nameValuePair (stripTpl n) (pkgs.writeText "omarchy-${name}-${n}" content)
+        lib.nameValuePair (stripTpl n) (pkgs.writeText "omarchy-${name}-${stripTpl n}" content)
     )
     rendered;
 in
@@ -66,7 +65,6 @@ in
     mkdir -p "$out"
     cp -r ${themeRoot}/* "$out/"
     chmod -R u+w "$out"
-    rm -rf "$out/.git" 2>/dev/null || true
 
     ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: filePath: ''
         outFile="$out/${lib.escapeShellArg n}"
@@ -77,8 +75,8 @@ in
       '')
       renderedFiles)}
 
-    ${lib.optionalString (theme?defaultBackground && theme.defaultBackground != null) ''
-      echo "${theme.defaultBackground}" > "$out/default-background"
+    ${lib.optionalString (theme.defaultBackground != null) ''
+      echo ${lib.escapeShellArg theme.defaultBackground} > "$out/default-background"
     ''}
 
     ${lib.concatStringsSep "\n" (builtins.map (bg: let
@@ -92,6 +90,6 @@ in
       };
     in ''
       mkdir -p "$out/backgrounds"
-      cp ${fetched} "$out/backgrounds/${lib.escapeShellArg fname}"
+      cp "${fetched}" "$out/backgrounds/${lib.escapeShellArg fname}"
     '') (theme.extraBackgrounds or []))}
   ''

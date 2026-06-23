@@ -32,11 +32,17 @@
           ref = lib.mkOption {
             type = lib.types.str;
             default = "main";
-            description = "Branch, tag, or commit SHA";
+            description = "Branch name, tag, or commit SHA";
+          };
+          rev = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Optional commit SHA to pin the theme revision.";
           };
           hash = lib.mkOption {
-            type = lib.types.str;
-            description = "SRI hash of the fetched source (e.g. sha256-...)";
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Deprecated — no longer used (builtins.fetchGit ignores it). Kept for backward compatibility.";
           };
           subpath = lib.mkOption {
             type = lib.types.str;
