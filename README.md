@@ -6,8 +6,7 @@ Define color themes from Git repositories, render 17 application templates, swit
 
 ## Demo
 
-<video src="https://github.com/niedch/nix-omarchy-theme/raw/master/assets/theme-switcher.mp4" controls width="100%"></video>
-
+https://github.com/user-attachments/assets/a27b06e0-ee51-4768-9071-6b37bc1d6dff
 
 ## Features
 
