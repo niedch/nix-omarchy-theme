@@ -84,6 +84,7 @@ in {
       gtk4
       libadwaita
       adwaita-icon-theme
+      yaru-theme
       libnotify
       (writeShellScriptBin "theme-switcher" ''
         set -euo pipefail
