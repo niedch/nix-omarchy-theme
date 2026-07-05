@@ -1,5 +1,6 @@
 {
   "alacritty.toml.tpl" = builtins.readFile ./alacritty.toml.tpl;
+  "color.ini.tpl" = builtins.readFile ./color.ini.tpl;
   "btop.theme.tpl" = builtins.readFile ./btop.theme.tpl;
   "chromium.theme.tpl" = builtins.readFile ./chromium.theme.tpl;
   "chromium-color.json.tpl" = builtins.readFile ./chromium-color.json.tpl;

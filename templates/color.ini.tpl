@@ -1,0 +1,19 @@
+[Omarchy]
+text               = {{ foreground_strip }}
+subtext            = {{ color8_strip }}
+main               = {{ background_strip }}
+main-elevated      = {{ selection_background_strip }}
+highlight          = {{ selection_background_strip }}
+highlight-elevated = {{ accent_strip }}
+sidebar            = {{ background_strip }}
+player             = {{ background_strip }}
+card               = {{ selection_background_strip }}
+shadow             = {{ color0_strip }}
+selected-row       = {{ accent_strip }}
+button             = {{ accent_strip }}
+button-active      = {{ selection_background_strip }}
+button-disabled    = {{ color8_strip }}
+tab-active         = {{ accent_strip }}
+notification       = {{ accent_strip }}
+notification-error = {{ color1_strip }}
+misc               = {{ color15_strip }}
