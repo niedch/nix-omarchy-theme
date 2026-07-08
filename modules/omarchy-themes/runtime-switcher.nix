@@ -13,10 +13,18 @@
   scripts = import ./scripts.nix {inherit pkgs;};
   inherit (import ./options.nix {inherit lib pkgs defaultTemplates afterHooks;}) options;
   schemasDir = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/gsettings-desktop-schemas-${pkgs.gsettings-desktop-schemas.version}/glib-2.0/schemas";
+
+  activeTheme = buildTheme {
+    name = cfg.defaultTheme;
+    theme = cfg.themes.${cfg.defaultTheme} or {};
+    templates = defaultTemplates // cfg.templates;
+  };
 in {
   inherit options;
 
   config = lib.mkIf cfg.enable {
+    omarchy-themes.activeTheme = activeTheme;
+
     home.activation.setupThemes = lib.hm.dag.entryAfter ["writeBoundary"] ''
       THEMES_DIR="${themesDir}"
       CURRENT="$THEMES_DIR/current"
@@ -38,8 +46,6 @@ in {
         ln -sfn "$THEMES_DIR/${cfg.defaultTheme}" "$CURRENT"
 
         ${scripts.selectBackground {preserveCurrentBg = false;}}
-
-        :
       fi
 
       export PATH="''${PATH:+$PATH:}$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/run/current-system/sw/bin"
@@ -86,7 +92,7 @@ in {
       adwaita-icon-theme
       yaru-theme
       libnotify
-      (writeShellScriptBin "theme-switcher" ''
+      (writeShellScriptBin "ts" ''
         set -euo pipefail
 
         export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
@@ -146,7 +152,7 @@ in {
     ];
 
     programs.zsh.initExtra = lib.mkIf config.programs.zsh.enable ''
-      alias ts="theme-switcher"
+      alias ts="ts"
     '';
   };
 }

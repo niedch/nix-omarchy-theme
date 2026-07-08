@@ -25,6 +25,8 @@
         inherit (omarchyLib) colors render;
       } {inherit config;};
 
+    nixosModules.default = import ./modules/nixos/specialisations.nix;
+
     devShells = forAllSystems (pkgs: import ./devShells {inherit pkgs;});
 
     formatter = forAllSystems (pkgs: pkgs.alejandra);

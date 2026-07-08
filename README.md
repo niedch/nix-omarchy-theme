@@ -1,38 +1,45 @@
 # nix-omarchy-theme
 
-Declarative multi-theme manager for NixOS + Hyprland, built as a Home Manager module.
-
-Define color themes from Git repositories, render 17 application templates, switch themes at runtime, and have your entire desktop follow — terminals, bars, editors, notifications, lockscreens, and more.
-
-## Demo
-
-https://github.com/user-attachments/assets/f80ac36d-e856-40b3-8b5f-783c4a445cc9
+Declarative multi-theme manager for NixOS + Hyprland. Instant runtime switching via symlink flip, plus NixOS specialisations for boot-time theme selection.
 
 ## Features
 
-- **Multi-theme management** — define any number of themes from Git repos containing a `colors.toml`
+- **Multi-theme management** — define themes from Git repos containing a `colors.toml`
 - **17 built-in app templates** — Alacritty, Btop, Chromium, Foot, Ghostty, Gum, Helix, Hyprland, Hyprlock, Hyprland preview picker, Keyboard RGB, Kitty, Mako, Obsidian, SwayOSD, Walker, Waybar
 - **Template placeholders** — `{{ key }}` (hex), `{{ key_strip }}` (hex without `#`), `{{ key_rgb }}` (dec commas)
 - **Per-app override** — theme repos can ship their own config files, which take precedence over built-in templates
-- **Runtime switching** — `theme-switcher` command to select and apply a theme interactively
+- **Instant runtime switching** — `ts` command flips the active theme symlink; apps reload via hooks
+- **NixOS specialisations** — each theme also gets a boot-time specialisation entry for bootloader selection
 - **Wallpaper support** — themes can include a `backgrounds/` directory; `theme-wallpaper` lets you pick one
-- **XDG symlinks** — symlink theme subdirectories (e.g. `hypr/`, `waybar/`) into `~/.config/`
+- **XDG symlinks** — symlink theme files into `~/.config/` via a mutable `current` symlink
 - **Custom hooks** — executable scripts in `~/.config/theme-switcher/hooks/` run on every theme switch
+
+## How it works
+
+**Runtime switching**: The Home Manager module builds all themes as nix derivations. On activation, each theme is symlinked into `~/.local/share/themes/<name>` → its store path, and a mutable `current` symlink points to the `defaultTheme`. `xdg.configFile` entries use `mkOutOfStoreSymlink` to point into `~/.local/share/themes/current/`. The `ts` command flips the `current` symlink and runs hooks — instant, no rebuild.
+
+**Boot-time selection**: The NixOS module generates one `specialisation` per theme. Each overrides `home-manager.users.<name>.omarchy-themes.defaultTheme`. Select one at boot or run `sudo /run/current-system/specialisation/<theme>/bin/switch-to-configuration switch`. Note: due to NixOS recursion guards, specialisations do not nest — switching via specialisation clears other specialisations. Use `ts` for repeated switching within a session.
 
 ## Installation
 
-Add the flake as an input to your `flake.nix`:
+Add the flake as an input and import both modules:
 
 ```nix
 {
-  inputs.omarchy-theme.url = "github:omarchis/nix-omarchy-theme";
+  inputs.nix-omarchy-theme.url = "github:niedch/nix-omarchy-theme";
 
-  outputs = { self, nixpkgs, home-manager, omarchy-theme, ... }: {
-    homeConfigurations."user@host" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+  outputs = { self, nixpkgs, home-manager, nix-omarchy-theme, ... }: {
+    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+      specialArgs = { inherit inputs; };
       modules = [
-        omarchy-theme.homeManagerModules.default
-        # ... your config
+        home-manager.nixosModules.home-manager
+        nix-omarchy-theme.nixosModules.default
+
+        ({ inputs, ... }: {
+          home-manager.users.myuser = { inputs, ... }: {
+            imports = [ inputs.nix-omarchy-theme.homeManagerModules.default ];
+          };
+        })
       ];
     };
   };
@@ -41,10 +48,13 @@ Add the flake as an input to your `flake.nix`:
 
 ## Usage
 
-Enable the module and define your themes:
+Define your themes in the home-manager config and configure the NixOS module:
 
 ```nix
+# Home Manager module (home-manager.users.myuser)
 {
+  imports = [ inputs.nix-omarchy-theme.homeManagerModules.default ];
+
   omarchy-themes = {
     enable = true;
     defaultTheme = "kanso";
@@ -54,33 +64,24 @@ Enable the module and define your themes:
     themes = {
       catppuccin = {
         url = "https://github.com/basecamp/omarchy.git";
-        ref = "9cf1852525a5f7de26d3162db9d61e2f5c1d5523";
-        hash = "sha256-9zkIEgD/L5+eK5fuQNXbBd5XXO+NwH6QWGiDI//kGas=";
+        rev = "abc123...";
+        hash = "sha256-...";
         subpath = "themes/catppuccin";
       };
 
-      gruvbox = {
-        url = "https://github.com/basecamp/omarchy.git";
-        ref = "9cf1852525a5f7de26d3162db9d61e2f5c1d5523";
-        hash = "sha256-9zkIEgD/L5+eK5fuQNXbBd5XXO+NwH6QWGiDI//kGas=";
-        subpath = "themes/gruvbox";
-        defaultBackground = "6-houses.png";
-        extraBackgrounds = [{
-          url = "https://w.wallhaven.cc/full/9m/wallhaven-9mj8yw.png";
-          hash = "sha256-m+CJrkoRp48ZY8LHBWBN7MnxWReLKxkKweKWdOvg1Fg=";
-          filename = "6-houses.png";
-        }];
-      };
-
       kanso = {
-        url = "https://github.com/HANCORE-linux/omarchy-kanso-theme.git";
-        ref = "bc405d36b93e0abff39c22eda14d1f33121319f3";
-        hash = "sha256-AfwCqhF7WMtavS+Z1YTO1YU3XsfGiwDyGhjhzYyvsfY=";
+        url = "https://github.com/user/my-theme.git";
+        rev = "def456...";
+        hash = "sha256-...";
         defaultBackground = "BG_Painting.jpg";
+        extraBackgrounds = [{
+          url = "https://example.com/bg.jpg";
+          hash = "sha256-...";
+          filename = "BG_Painting.jpg";
+        }];
       };
     };
 
-    # Symlink individual rendered files into ~/.config/
     symlinks = {
       "hypr/theme.lua".source = "hyprland.lua";
       "hypr/hyprlock-theme.conf".source = "hyprlock.conf";
@@ -90,77 +91,59 @@ Enable the module and define your themes:
       "btop/themes/btop.theme".source = "btop.theme";
       "gtk-3.0/settings.ini" = { source = "settings-3.0.ini"; recursive = false; };
       "gtk-4.0/settings.ini" = { source = "settings-4.0.ini"; recursive = false; };
+      "gtk-3.0/gtk.css".source = "gtk.css";
+      "gtk-4.0/gtk.css".source = "gtk.css";
     };
   };
 }
 ```
 
-### Theme selector
-
-By default themes are selected with `wofi`. Set a different command, e.g. `walker --dmenu` or `fzf`:
+### NixOS module
 
 ```nix
+# NixOS module
 {
-  omarchy-themes.selectorCommand = "walker --dmenu";
+  imports = [ inputs.nix-omarchy-theme.nixosModules.default ];
+  omarchy-themes-nixos.user = "myuser";
 }
 ```
 
-### Custom templates
+Each theme (except `defaultTheme`) becomes a NixOS specialisation visible at `/run/current-system/specialisation/<theme>/` and in the bootloader menu.
 
-Override or extend the built-in templates:
+## Switching themes
 
-```nix
-{
-  omarchy-themes.templates = {
-    "ghostty.conf" = ''
-      background = {{ background }}
-      foreground = {{ foreground }}
-      palette = 0={{ color0 }}
-    '';
-  };
-}
+### `ts` — instant runtime switch
+
+The module installs `ts` (aliased to `ts` in zsh). It lists all installed themes, flips the `current` symlink, and runs hooks to reload apps. Sub-second, no sudo, no rebuild:
+
+```bash
+ts
+# → dmenu picker lists all themes
+# → symlink flip + hooks (hyprctl reload, restart waybar/walker/mako, GTK update, etc.)
 ```
+
+### Bootloader / specialisation switch
+
+Each theme also appears as a NixOS specialisation. Select one at boot, or switch with:
+
+```bash
+sudo /run/current-system/specialisation/<theme>/bin/switch-to-configuration switch
+```
+
+This triggers a full NixOS activation (~1–3min). Note: NixOS does not support nesting specialisations — after switching this way, further specialisations are unavailable until next `nixos-rebuild switch`. Use `ts` for repeat switching within a session.
 
 ## Consumer-side app setup
 
 Some applications need explicit configuration to point at the theme files rendered to `~/.local/share/themes/current/`. Below are the common setups.
 
-<details>
-<summary><b>Ghostty</b> — load theme config at startup</summary>
-
-Point Ghostty's `config-file` at the theme's rendered `ghostty.conf`:
+### Ghostty
 
 ```nix
-programs.ghostty = {
-  enable = true;
-  settings = {
-    "config-file" = "?~/.local/share/themes/current/ghostty.conf";
-  };
-};
+programs.ghostty.settings."config-file" =
+  "?~/.local/share/themes/current/ghostty.conf";
 ```
 
-The `?` prefix means "load if the file exists, silently skip otherwise."
-</details>
-
-<details>
-<summary><b>Neovim</b> — load theme Lua plugin specs at startup</summary>
-
-If your theme repo ships a `neovim.lua` file, load it from your lazy/plugin setup:
-
-```lua
-local theme_file = vim.fn.expand("~/.local/share/themes/current/neovim.lua")
-if vim.loop.fs_stat(theme_file) then
-  vim.list_extend(plugins, dofile(theme_file))
-end
-```
-
-Theme repos can override the `neovim.lua` template (or provide their own) to inject color scheme commands, highlight overrides, or additional plugin specs at runtime.
-</details>
-
-<details>
-<summary><b>Obsidian</b> — symlink theme CSS into your vault</summary>
-
-Symlink the rendered `obsidian.css` into your vault's snippets folder:
+### Obsidian
 
 ```nix
 home.file."path/to/your-vault/.obsidian/snippets/obsidian.css" = {
@@ -169,88 +152,89 @@ home.file."path/to/your-vault/.obsidian/snippets/obsidian.css" = {
 };
 ```
 
-Then enable the snippet in Obsidian's **Settings → Appearance → CSS snippets**.
+### Neovim (LazyVim)
 
-If you also want **live reload** when switching themes (via `theme-switcher`), enable the built-in CLI in Obsidian (**Settings → General → Command line interface**) and follow the prompt to register it. The built-in `0_reload_defaults` hook will then send a reload command to Obsidian on every theme switch. You can disable or override this via the `afterHooks` option.
-</details>
+```lua
+local theme_file = vim.fn.expand("~/.local/share/themes/current/neovim.lua")
+if vim.loop.fs_stat(theme_file) then
+  vim.list_extend(plugins, dofile(theme_file))
+end
+```
 
-<details>
-<summary><b>swaybg</b> — point wallpaper service at theme background</summary>
-
-Point the swaybg systemd service at the `current-background` symlink that nix-omarchy-theme maintains:
+### swaybg
 
 ```nix
-systemd.user.services.swaybg = {
-  Service = {
-    ExecStart = "${pkgs.swaybg}/bin/swaybg -i %h/.local/share/themes/current-background -m fill";
-  };
-};
+systemd.user.services.swaybg.Service.ExecStart =
+  "${pkgs.swaybg}/bin/swaybg -i %h/.local/share/themes/current-background -m fill";
 ```
 
 The `current-background` symlink is updated automatically whenever a theme is switched.
-</details>
 
-<details>
-<summary><b>Walker</b> — load theme colors via <code>style.css</code></summary>
+### Chromium
 
-Symlink the rendered `walker.css` into Walker's theme directory, then write a `style.css` that imports it so the theme's color variables (`@text`, `@base`, `@border`, …) are available to your custom rules:
+```nix
+xdg.configFile."chromium/Policies/managed/color.json".source =
+  config.lib.file.mkOutOfStoreSymlink
+    "${config.home.homeDirectory}/.local/share/themes/current/chromium-color.json";
+```
+
+### Walker
 
 ```nix
 omarchy-themes.symlinks."walker/themes/default/walker.css".source = "walker.css";
 ```
 
-`style.css` (placed at `~/.config/walker/themes/default/style.css`) begins with:
+Then write a `style.css` that imports it:
 
 ```css
 @import "./walker.css";
 ```
 
-and is selected in `config.toml` via `theme = "default"`. The accompanying `layout.xml` defines the GTK widget structure (window, search box, list, preview).
+### Waybar, Hyprland, Mako, Btop, GTK
 
-Reference files from a working setup:
+These apps read files placed by `omarchy-themes.symlinks`. Once the symlink entries are defined, they pick up theme changes automatically on each NixOS activation.
 
-- [style.css](https://github.com/niedch/nixos-dotfiles/blob/master/home/walker/style.css)
-- [layout.xml](https://github.com/niedch/nixos-dotfiles/blob/master/home/walker/layout.xml)
+## Provided commands
 
-</details>
+### `ts`
 
-<details>
-<summary><b>Chromium & Chrome-based browsers</b> — apply theme color via a policy hook</summary>
+Lists installed themes, flips the `current` symlink, and runs hooks. Instant, no sudo, no rebuild.
 
-The module renders a `chromium-color.json` (`{"BrowserThemeColor": "{{ background }}"}`) into `~/.local/share/themes/current/`. The `BrowserThemeColor` managed policy sets the browser's toolbar/chrome accent color.
+### `theme-wallpaper`
 
-Chrome-based browsers only re-read policies when the policy file's **content** changes on disk — a symlink swap (relinking `current/` on theme switch) doesn't produce a content-change event, so the new color is never picked up. The built-in `02_apply_chromium_color` hook solves this by **copying** the json into the managed-policy directory on every switch, which the browser detects as a real change.
+Lists wallpapers from the active theme's `backgrounds/` directory and sets the selected one by updating `~/.local/share/themes/current-background`. Restarts swaybg if running.
 
-The built-in hook covers plain Chromium. To extend it to additional browsers, override the hook via `afterHooks`:
+## Custom templates
+
+Override or extend the built-in templates:
 
 ```nix
-omarchy-themes.afterHooks."02_apply_chromium_color" = ''
-  CURRENT="''${CURRENT:-$HOME/.local/share/themes/current}"
-  for policy_dir in \
-    "$HOME/.config/chromium/policies/managed" \
-    "$HOME/.config/google-chrome/policies/managed" \
-    "$HOME/.config/BraveSoftware/Brave-Browser/policies/managed" \
-    "$HOME/.config/microsoft-edge/policies/managed" \
-    "$HOME/.config/vivaldi/policies/managed"; do
-    mkdir -p "$policy_dir"
-    cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
-  done
+omarchy-themes.templates."ghostty.conf" = ''
+  background = {{ background }}
+  foreground = {{ foreground }}
+  palette = 0={{ color0 }}
 '';
 ```
 
-Common Linux policy directories:
+## Custom hooks
 
-| Browser | Policy directory |
-|---|---|
-| Chromium | `~/.config/chromium/policies/managed/` |
-| Google Chrome | `~/.config/google-chrome/policies/managed/` |
-| Brave | `~/.config/BraveSoftware/Brave-Browser/policies/managed/` |
-| Microsoft Edge | `~/.config/microsoft-edge/policies/managed/` |
-| Vivaldi | `~/.config/vivaldi/policies/managed/` |
+Hooks run after theme activation. `$1` is the theme name.
 
-The new color takes effect on next browser launch.
+### Via Nix (`afterHooks`)
 
-</details>
+```nix
+omarchy-themes.afterHooks = {
+  "50_restart_polybar" = ''
+    polybar "$1" &
+  '';
+};
+```
+
+Set `afterHooks = {}` to disable all built-in hooks.
+
+### Manual
+
+Place executable scripts in `~/.config/theme-switcher/hooks/theme-set.d/` — they run sorted alphabetically. `~/.config/theme-switcher/hooks/theme-set` runs after all `.d/*` scripts.
 
 ## Theme repository format
 
@@ -264,36 +248,20 @@ accent = "#cba6f7"
 selection_background = "#585b70"
 selection_foreground = "#cdd6f4"
 color0 = "#45475a"
-color1 = "#f38ba8"
-color2 = "#a6e3a1"
-color3 = "#f9e2af"
-color4 = "#89b4fa"
-color5 = "#cba6f7"
-color6 = "#94e2d5"
-color7 = "#bac2de"
-color8 = "#585b70"
-color9 = "#f38ba8"
-color10 = "#a6e3a1"
-color11 = "#f9e2af"
-color12 = "#89b4fa"
-color13 = "#cba6f7"
-color14 = "#94e2d5"
-color15 = "#bac2de"
+# ... color1 through color15
 ```
 
-Optional files in the theme repo:
+Optional files:
 
 | File | Purpose |
 |------|---------|
-| `light.mode` | Empty marker file — treat as light theme; sets GTK theme to `Adwaita` + `prefer-light` |
-| `gtk.theme` | Override the GTK theme name (e.g. `"Tokyo-Night"`); takes highest priority over `light.mode` |
-| `icons.theme` | Icon theme name (e.g. `"Yaru-prussiangreen"`); feeds into GTK's `icon-theme` setting |
-| `backgrounds/` | Wallpaper images (any format) |
-| Any template name | Overrides the built-in template for that app (e.g. `waybar.css`, `hyprland.conf`) |
+| `light.mode` | Empty marker — light theme; sets GTK to `Adwaita` + `prefer-light` |
+| `gtk.theme` | GTK theme name (e.g. `"Tokyo-Night"`) |
+| `icons.theme` | Icon theme name (e.g. `"Yaru-prussiangreen"`) |
+| `backgrounds/` | Wallpaper images |
+| Any template name | Overrides the built-in template for that app |
 
 ## Template placeholders
-
-Placeholder syntax in templates:
 
 | Variant | Example | Output |
 |---|---|---|
@@ -303,48 +271,6 @@ Placeholder syntax in templates:
 
 Available color keys: `background`, `foreground`, `cursor`, `accent`, `selection_background`, `selection_foreground`, `color0`–`color15`.
 
-## Provided commands
-
-### `theme-switcher` (alias `ts` with zsh)
-
-Lists all defined themes, applies the selected one: switches wallpaper, reloads Hyprland, restarts Waybar/Mako/Ghostty/Btop, updates GTK theme and icon theme via gsettings, and runs custom hooks.
-
-### `theme-wallpaper`
-
-Lists wallpapers from the current theme's `backgrounds/` directory and sets the selected one via swaybg.
-
-## Custom hooks
-
-Hooks run after a theme has been switched. Within a hook, `$1` gives you the selected theme name.
-
-### Via Nix (`afterHooks`)
-
-The built-in hooks are defined as defaults but can be overridden or extended using the `afterHooks` option:
-
-```nix
-{
-  omarchy-themes.afterHooks = {
-    # Override a built-in hook
-    "0_reload_defaults" = ''
-      hyprctl reload 2>/dev/null || true
-    '';
-    # Add your own hooks — prefix with a number to control ordering, use $1 for the theme name
-    "50_restart_polybar" = ''
-      polybar "$1" &
-    '';
-  };
-}
-```
-
-Set `afterHooks = {}` to disable all built-in hooks entirely.
-
-### Manual
-
-Place executable scripts in:
-
-- `~/.config/theme-switcher/hooks/theme-set.d/` — each script runs with the theme name as `$1`, sorted alphabetically; use `$1` inside your script to access it
-- `~/.config/theme-switcher/hooks/theme-set` — runs after all scripts in `theme-set.d/`
-
 ## Built-in templates
 
 | Template file | Application |
@@ -352,6 +278,7 @@ Place executable scripts in:
 | `alacritty.toml` | Alacritty terminal |
 | `btop.theme` | Btop system monitor |
 | `chromium.theme` | Chromium browser |
+| `chromium-color.json` | Chromium policy color |
 | `foot.ini` | Foot terminal |
 | `ghostty.conf` | Ghostty terminal |
 | `gum.env.conf` | Charm Gum TUI |
@@ -362,10 +289,23 @@ Place executable scripts in:
 | `keyboard.rgb` | Keyboard backlight |
 | `kitty.conf` | Kitty terminal |
 | `mako.ini` | Mako notifications |
-| `obsidian.css` | Obsidian.md |
+| `obsidian.css` | Obsidian |
 | `swayosd.css` | SwayOSD |
 | `walker.css` | Walker launcher |
 | `waybar.css` | Waybar |
+
+## Options reference
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enable` | bool | `false` | Enable the module |
+| `defaultTheme` | str | `"default"` | Theme activated on rebuild |
+| `selectorCommand` | str | wofi dmenu | Command that reads stdin and outputs selection |
+| `themes` | attrset | `{}` | Theme definitions (url, rev, hash, subpath, backgrounds) |
+| `templates` | attrset | built-in | Template overrides (`"name.tpl"` → content) |
+| `afterHooks` | attrset | built-in | Hook script contents (key → shell script) |
+| `symlinks` | attrset | `{}` | XDG config paths to symlink from the active theme |
+| `activeTheme` | path | (read-only) | Store path of the active theme derivation |
 
 ## Development
 
@@ -373,4 +313,4 @@ Place executable scripts in:
 nix develop
 ```
 
-Provides `alejandra` (formatter) and `statix` (linter). The whole repo is formatted with `nix fmt`.
+Provides `alejandra` (formatter) and `statix` (linter). Format with `nix fmt`.

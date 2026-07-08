@@ -137,8 +137,19 @@
         wallpapers = {source = "wallpapers";};
       };
       description = ''
-        XDG config directories to symlink from the current theme.
-        Keys are XDG config directory names, values specify theme repo source subpaths.
+        XDG config files/directories symlinked into ~/.config from the active theme.
+        Keys are XDG config relative paths, values specify theme repo source subpaths.
+        Each entry becomes a pure store symlink via xdg.configFile.
+      '';
+    };
+
+    activeTheme = lib.mkOption {
+      type = lib.types.path;
+      readOnly = true;
+      description = ''
+        Store path of the currently active theme derivation.
+        Use in other modules (e.g. as source for home.file or xdg.configFile)
+        to reference theme files via `''${config.omarchy-themes.activeTheme}/<file>`.
       '';
     };
   };
