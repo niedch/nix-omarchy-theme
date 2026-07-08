@@ -15,7 +15,7 @@
         "$HOME/.config/chromium/Policies/managed" \
         "$HOME/.config/chromium/policies/managed"; do
           mkdir -p "$policy_dir"
-          cp "$CURRENT/chromium-color.json" "$policy_dir/color.json"
+          cp -f "$CURRENT/chromium-color.json" "$policy_dir/color.json" 2>/dev/null || true
       done
     fi
   '';
